@@ -58,13 +58,13 @@ public class ChatAppClient {
             System.err.println("Connection failed!");
         } else {
             System.out.println("Connection successful!");
-            if (client.login("guest", "guest")) {
-                System.out.println("Login successful!");
-                
-                client.msg("jim", "Hello World!");
-            } else {
-                System.err.println("Login failed!");
-            }
+//            if (client.login("guest", "guest")) {
+//                System.out.println("Login successful!");
+//                
+//                client.msg("jim", "Hello World!");
+//            } else {
+//                System.err.println("Login failed!");
+//            }
           //  client.logoff();
         }
     }
@@ -83,7 +83,7 @@ public class ChatAppClient {
         return false;
     }
 
-    private boolean login(String username, String password) throws IOException {
+    public boolean login(String username, String password) throws IOException {
         String cmd = "login " + username + " " + password + "\r\n";
         serverOut.write(cmd.getBytes());
         String response = reader.readLine();
