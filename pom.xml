@@ -8,6 +8,7 @@
     <modules>
         <module>ChatAppServer</module>
         <module>../ChatAppGui</module>
+        <module>ChatAppGui</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
