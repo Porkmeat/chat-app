@@ -65,6 +65,8 @@ public class ServerWorker extends Thread {
                     handleJoin(tokens);
                 } else if ("leave".equalsIgnoreCase(cmd)) {
                     handleLeave(tokens);
+                } else if ("getusers".equalsIgnoreCase(cmd)) {
+                    getOnlineUsers(tokens);
                 } else {
                     String msg = "Unknown " + cmd + "\r\n";
                     outputStream.write(msg.getBytes());
@@ -102,14 +104,7 @@ public class ServerWorker extends Thread {
                 this.login = username;
 
                 // get online user list
-                for (ServerWorker worker : workerList) {
-                    if (!login.equals(worker.getLogin())) {
-                        if (worker.getLogin() != null) {
-                            String msg2 = "online " + worker.getLogin() + "\r\n";
-                            send(msg2);
-                        }
-                    }
-                }
+            
 
                 // send online status to other users
                 String onlineMsg = "online " + login + "\r\n";
@@ -127,6 +122,19 @@ public class ServerWorker extends Thread {
             String msg = "Login error\r\n";
             outputStream.write(msg.getBytes());
         }
+    }
+    
+    private void getOnlineUsers(String[] tokens) throws IOException {
+        String username = tokens[1];
+        List<ServerWorker> workerList = server.getWorkerList();
+        for (ServerWorker worker : workerList) {
+                    if (!username.equals(worker.getLogin())) {
+                        if (worker.getLogin() != null) {
+                            String msg2 = "online " + worker.getLogin() + "\r\n";
+                            send(msg2);
+                        }
+                    }
+                }
     }
 
     private void handleLogoff() throws IOException {

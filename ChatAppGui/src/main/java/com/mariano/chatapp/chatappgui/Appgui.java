@@ -4,7 +4,6 @@ import com.mariano.chatapp.chatclient.ChatAppClient;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -16,7 +15,7 @@ public class Appgui extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("loginfxml.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(Appgui.class.getResource("loginfxml.fxml"));
         scene = new Scene(fxmlLoader.load(), 640, 480);
         
         //send client to controller

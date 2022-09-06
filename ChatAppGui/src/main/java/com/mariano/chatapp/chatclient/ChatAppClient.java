@@ -9,8 +9,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.application.Application;
-import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -101,7 +99,12 @@ public class ChatAppClient {
         }
     }
     
-    private void logoff() throws IOException {
+    public void requestOnlineUsers(String username) throws IOException {
+        String cmd = "getusers " + username +"\r\n";
+        serverOut.write(cmd.getBytes());
+    }
+    
+    public void logoff() throws IOException {
         String cmd = "logoff\r\n";
         serverOut.write(cmd.getBytes());
     }
@@ -175,7 +178,7 @@ public class ChatAppClient {
        }
     }
 
-    private void msg(String recipient, String message) throws IOException {
+    public void msg(String recipient, String message) throws IOException {
         String cmd = "msg " + recipient + " " + message +"\r\n";
         serverOut.write(cmd.getBytes());
     }
