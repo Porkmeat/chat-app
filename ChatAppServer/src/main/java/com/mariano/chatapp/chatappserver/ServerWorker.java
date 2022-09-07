@@ -89,7 +89,7 @@ public class ServerWorker extends Thread {
             String password = tokens[2];
 
             // login check
-            if (username.equals("guest") && password.equals("guest") || username.equals("jim") && password.equals("jim")) {
+            if (username.equals("guest") && password.equals("guest") || username.equals("jim") && password.equals("jim") || username.equals("peter") && password.equals("peter")) {
                 List<ServerWorker> workerList = server.getWorkerList();
                 for (ServerWorker worker : workerList) {
                     if (worker.getLogin() != null && worker.getLogin().equalsIgnoreCase(username)) {

@@ -4,6 +4,7 @@ import com.mariano.chatapp.chatclient.ChatAppClient;
 import com.mariano.chatapp.chatclient.MessageListener;
 import com.mariano.chatapp.chatclient.StatusListener;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -14,6 +15,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -22,6 +24,8 @@ public class MainScreenController implements StatusListener, MessageListener {
 
     private ChatAppClient client;
     private String currentChat;
+    private final HashMap<String, ListView> activeChats = new HashMap<>();
+    private ListView<String> activeChat;
 
     @FXML
     private ListView<String> userlist;
@@ -34,7 +38,8 @@ public class MainScreenController implements StatusListener, MessageListener {
     @FXML
     private TextField chatinput;
     @FXML
-    private ListView<String> chattest;
+    private ScrollPane chatwindow;
+    
 
     public void setupController(ChatAppClient client, String username) throws IOException {
         mainusername.setText(username);
@@ -47,14 +52,17 @@ public class MainScreenController implements StatusListener, MessageListener {
             public void changed(ObservableValue<? extends String> ov, String t, String t1) {
                 currentChat = userlist.getSelectionModel().getSelectedItem();
                 if (mainchatusername.getText() != null && !mainchatusername.getText().equals(currentChat)) {
+                    
+                    Platform.runLater(() -> {
+                        activeChat = activeChats.get(currentChat);
+                        chatwindow.setContent(activeChat);
+                        mainchatusername.setText(currentChat);
+                    });
                     if (!chatscreen.isVisible()) {
                         Platform.runLater(() -> {
                             chatscreen.setVisible(true);
                         });
                     }
-                    Platform.runLater(() -> {
-                        mainchatusername.setText(currentChat);
-                    });
                 }
             }
         });
@@ -81,6 +89,9 @@ public class MainScreenController implements StatusListener, MessageListener {
 
     @Override
     public void online(String username) {
+        if (!activeChats.containsKey(username)) {
+                        activeChats.put(username, new ListView<String>());
+                    }
         Platform.runLater(() -> {
             userlist.getItems().add(username);
         });
@@ -98,7 +109,7 @@ public class MainScreenController implements StatusListener, MessageListener {
         if (chatinput.getText() != null && !chatinput.getText().isBlank()) {
             String message = chatinput.getText();
             Platform.runLater(() -> {
-                chattest.getItems().add("You: " + message);
+                activeChat.getItems().add("You: " + message);
             });
             client.msg(currentChat, message);
             Platform.runLater(() -> {
@@ -109,11 +120,10 @@ public class MainScreenController implements StatusListener, MessageListener {
 
     @Override
     public void messageGet(String fromUser, String message) {
-        if (currentChat != null && currentChat.equals(fromUser)) {
+        ListView<String> chatWithUser = activeChats.get(fromUser);
             Platform.runLater(() -> {
-                chattest.getItems().add(fromUser + ": " + message);
+                chatWithUser.getItems().add(fromUser + ": " + message);
             });
-        }
     }
 
 }
