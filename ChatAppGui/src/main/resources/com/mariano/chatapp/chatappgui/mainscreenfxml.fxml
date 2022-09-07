@@ -76,7 +76,7 @@
                   </AnchorPane>
                </bottom>
                <center>
-                  <ScrollPane fx:id="chatwindow" fitToHeight="true" fitToWidth="true" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" stylesheets="@fxml.css" BorderPane.alignment="CENTER">
+                  <ScrollPane fx:id="chatwindow" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" stylesheets="@fxml.css" vvalue="1.0" BorderPane.alignment="CENTER">
                      <opaqueInsets>
                         <Insets />
                      </opaqueInsets>

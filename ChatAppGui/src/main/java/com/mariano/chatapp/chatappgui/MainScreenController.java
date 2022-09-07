@@ -39,7 +39,6 @@ public class MainScreenController implements StatusListener, MessageListener {
     private TextField chatinput;
     @FXML
     private ScrollPane chatwindow;
-    
 
     public void setupController(ChatAppClient client, String username) throws IOException {
         mainusername.setText(username);
@@ -52,11 +51,13 @@ public class MainScreenController implements StatusListener, MessageListener {
             public void changed(ObservableValue<? extends String> ov, String t, String t1) {
                 currentChat = userlist.getSelectionModel().getSelectedItem();
                 if (mainchatusername.getText() != null && !mainchatusername.getText().equals(currentChat)) {
-                    
+
                     Platform.runLater(() -> {
                         activeChat = activeChats.get(currentChat);
                         chatwindow.setContent(activeChat);
+                        autoScroll();
                         mainchatusername.setText(currentChat);
+
                     });
                     if (!chatscreen.isVisible()) {
                         Platform.runLater(() -> {
@@ -90,8 +91,8 @@ public class MainScreenController implements StatusListener, MessageListener {
     @Override
     public void online(String username) {
         if (!activeChats.containsKey(username)) {
-                        activeChats.put(username, new ListView<String>());
-                    }
+            activeChats.put(username, new ListView<String>());
+        }
         Platform.runLater(() -> {
             userlist.getItems().add(username);
         });
@@ -110,6 +111,7 @@ public class MainScreenController implements StatusListener, MessageListener {
             String message = chatinput.getText();
             Platform.runLater(() -> {
                 activeChat.getItems().add("You: " + message);
+                autoScroll();
             });
             client.msg(currentChat, message);
             Platform.runLater(() -> {
@@ -121,9 +123,18 @@ public class MainScreenController implements StatusListener, MessageListener {
     @Override
     public void messageGet(String fromUser, String message) {
         ListView<String> chatWithUser = activeChats.get(fromUser);
-            Platform.runLater(() -> {
-                chatWithUser.getItems().add(fromUser + ": " + message);
-            });
+        Platform.runLater(() -> {
+            chatWithUser.getItems().add(fromUser + ": " + message);
+            if (activeChat == chatWithUser) {
+                autoScroll();
+            }
+        });
+    }
+
+    private void autoScroll() {
+        if (activeChat != null) {
+            activeChat.scrollTo(activeChat.getItems().size());
+        }
     }
 
 }

@@ -16,7 +16,7 @@
          <children>
             <TextField id="username" fx:id="usernameField" prefHeight="25.0" prefWidth="149.0" promptText="Username" />
             <PasswordField fx:id="passwordField" promptText="Password" />
-            <Button fx:id="loginButton" mnemonicParsing="false" onAction="#login" text="Log in" />
+            <Button fx:id="loginButton" defaultButton="true" mnemonicParsing="false" onAction="#login" text="Log in" />
          </children>
       </FlowPane>
    </children>
