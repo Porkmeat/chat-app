@@ -7,6 +7,7 @@ package com.mariano.chatapp.chatclient;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
@@ -182,6 +183,15 @@ public class ChatAppClient {
         String cmd = "msg " + recipient + " " + message +"\r\n";
         serverOut.write(cmd.getBytes());
     }
+    
+    public boolean createUser(String username, String password) throws IOException {
+        String cmd = "newuser " + username + " " + password + "\r\n";
+        serverOut.write(cmd.getBytes());
+        String response = reader.readLine();
+
+        return response.equals("account created");
+    }
+
 
     private void handleMessage(String[] tokensMsg) {
         String fromUser = tokensMsg[1];

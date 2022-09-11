@@ -42,7 +42,20 @@ public class LoginController {
                 // 
             } else {
                 System.out.println("Connection failed!");
-            };
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    @FXML
+    private void createUser() {
+        try {
+            if (client.createUser(usernameField.getText(), passwordField.getText())) {
+                System.out.println("Account created!");
+            } else {
+                System.out.println("Failed!");
+            }
         } catch (IOException ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }

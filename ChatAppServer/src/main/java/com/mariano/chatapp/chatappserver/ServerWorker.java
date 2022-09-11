@@ -8,8 +8,10 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -18,8 +20,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ServerWorker extends Thread {
 
+    private final MySqlConnection database;
     private final Socket clientSocket;
     private String login = null;
+    private int userid = 0;
     private final Server server;
     private OutputStream outputStream;
     private final HashSet<String> topicSet = new HashSet<>();
@@ -27,6 +31,7 @@ public class ServerWorker extends Thread {
     public ServerWorker(Server server, Socket clientSocket) {
         this.server = server;
         this.clientSocket = clientSocket;
+        this.database = new MySqlConnection();
     }
 
     @Override
@@ -67,13 +72,14 @@ public class ServerWorker extends Thread {
                     handleLeave(tokens);
                 } else if ("getusers".equalsIgnoreCase(cmd)) {
                     getOnlineUsers(tokens);
+                } else if ("newuser".equalsIgnoreCase(cmd)) {
+                    createUser(outputStream, tokens);
                 } else {
                     String msg = "Unknown " + cmd + "\r\n";
                     outputStream.write(msg.getBytes());
                 }
             }
         }
-        //clientSocket.close();
     }
 
     // send msg to users
@@ -89,7 +95,7 @@ public class ServerWorker extends Thread {
             String password = tokens[2];
 
             // login check
-            if (username.equals("guest") && password.equals("guest") || username.equals("jim") && password.equals("jim") || username.equals("peter") && password.equals("peter")) {
+            if (checkLogin(username, password)) {
                 List<ServerWorker> workerList = server.getWorkerList();
                 for (ServerWorker worker : workerList) {
                     if (worker.getLogin() != null && worker.getLogin().equalsIgnoreCase(username)) {
@@ -102,10 +108,11 @@ public class ServerWorker extends Thread {
                 System.out.println("User logged in successfully: " + username + "\r\n");
                 outputStream.write(msg.getBytes());
                 this.login = username;
+                while (userid == 0) {
+                    setUserId();
+                }
 
                 // get online user list
-            
-
                 // send online status to other users
                 String onlineMsg = "online " + login + "\r\n";
                 for (ServerWorker worker : workerList) {
@@ -123,18 +130,18 @@ public class ServerWorker extends Thread {
             outputStream.write(msg.getBytes());
         }
     }
-    
+
     private void getOnlineUsers(String[] tokens) throws IOException {
         String username = tokens[1];
         List<ServerWorker> workerList = server.getWorkerList();
         for (ServerWorker worker : workerList) {
-                    if (!username.equals(worker.getLogin())) {
-                        if (worker.getLogin() != null) {
-                            String msg2 = "online " + worker.getLogin() + "\r\n";
-                            send(msg2);
-                        }
-                    }
+            if (!username.equals(worker.getLogin())) {
+                if (worker.getLogin() != null) {
+                    String msg2 = "online " + worker.getLogin() + "\r\n";
+                    send(msg2);
                 }
+            }
+        }
     }
 
     private void handleLogoff() throws IOException {
@@ -204,6 +211,53 @@ public class ServerWorker extends Thread {
             }
         } else {
             send("Syntax error\r\n");
+        }
+    }
+
+    private void createUser(OutputStream outputStream, String[] tokens) {
+        String username = tokens[1];
+        String password = tokens[2];
+
+        Random random = new Random();
+        int salt = random.nextInt(10000);
+        String saltedpass = password + String.valueOf(salt);
+        String hashedpass = DigestUtils.sha256Hex(saltedpass);
+        System.out.println("trying to create");
+
+        try {
+            if (database.isUsernameAvailable(username)) {
+                database.addNewUser(username, hashedpass, salt);
+                System.out.println("account created");
+                String response = "account created\r\n";
+                outputStream.write(response.getBytes());
+            } else {
+                String response = "Username not available\r\n";
+                outputStream.write(response.getBytes());
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private boolean checkLogin(String username, String password) {
+        try {
+            if (!database.isUsernameAvailable(username)) {
+                int salt = database.getSalt(username);
+                String saltedpass = password + String.valueOf(salt);
+                String hashedpass = DigestUtils.sha256Hex(saltedpass);
+                return database.checkPassword(username, hashedpass);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    private void setUserId() {
+        try {
+            this.userid = database.getUserId(login);
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
