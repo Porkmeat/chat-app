@@ -58,6 +58,42 @@ public class MySqlConnection {
 
     }
     
+    public void addFriend(int userId,String username, String friendName) throws Exception {
+        try {
+            connect();
+            preparedStatement = connect
+                    .prepareStatement("SELECT user_id FROM user WHERE user_login = ?;");
+            preparedStatement.setString(1, friendName);
+
+            ResultSet results = preparedStatement.executeQuery();
+            results.next();
+            
+            int friendId = results.getInt(1);
+            
+            // generate unique id for friends chat
+            long chatUuid = (long)Math.max(userId, friendId) << 32 + Math.min(userId, friendId);
+            
+            preparedStatement = connect
+                    .prepareStatement("INSERT INTO user_contacts (contact_user_id,contact_friend_id,contact_alias,contact_status,contact_chat_uuid) "
+                            + "VALUES (?,?,?,1,"+chatUuid+"),"
+                            + "(?,?,?,2,"+chatUuid+");");
+            
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, friendId);
+            preparedStatement.setString(3, friendName);
+            preparedStatement.setInt(4, friendId);
+            preparedStatement.setInt(5, userId);
+            preparedStatement.setString(6, username);
+
+            preparedStatement.executeUpdate();
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+
+    }
+    
     public boolean checkPassword(String username, String password) throws Exception {
         try {
             connect();
@@ -99,9 +135,28 @@ public class MySqlConnection {
             close();
         }
     }
+    
+    public ResultSet fetchFriends(int userid) throws Exception {
+        try {
+            connect();
+            preparedStatement = connect
+                    .prepareStatement("SELECT salt FROM user WHERE user_login = ?;");
+            preparedStatement.setInt(1, userid);
+
+            ResultSet results = preparedStatement.executeQuery();
+            
+            
+            return results;
+            
+            
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
 
     private void connect() throws Exception {
-        // MySQL driver
         System.out.println("try to connect");
         connect = DriverManager
                 .getConnection("jdbc:mysql://localhost:3306/chatapp_schema", "javatest", "Java1test2");

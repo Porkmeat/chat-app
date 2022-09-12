@@ -200,4 +200,9 @@ public class ChatAppClient {
             listener.messageGet(fromUser, message);
         }
     }
+
+    public void addFriend(String friendname) throws IOException {
+        String cmd = "addfriend " + friendname + "\r\n";
+        serverOut.write(cmd.getBytes());
+    }
 }

@@ -74,6 +74,8 @@ public class ServerWorker extends Thread {
                     getOnlineUsers(tokens);
                 } else if ("newuser".equalsIgnoreCase(cmd)) {
                     createUser(outputStream, tokens);
+                } else if ("addfriend".equalsIgnoreCase(cmd)) {
+                    addFriend(tokens);
                 } else {
                     String msg = "Unknown " + cmd + "\r\n";
                     outputStream.write(msg.getBytes());
@@ -108,9 +110,6 @@ public class ServerWorker extends Thread {
                 System.out.println("User logged in successfully: " + username + "\r\n");
                 outputStream.write(msg.getBytes());
                 this.login = username;
-                while (userid == 0) {
-                    setUserId();
-                }
 
                 // get online user list
                 // send online status to other users
@@ -119,6 +118,10 @@ public class ServerWorker extends Thread {
                     if (!worker.equals(this)) {
                         worker.send(onlineMsg);
                     }
+                }
+
+                while (userid == 0) {
+                    setUserId();
                 }
 
             } else {
@@ -147,13 +150,14 @@ public class ServerWorker extends Thread {
     private void handleLogoff() throws IOException {
 
         if (server.userLogoff(this)) {
-            List<ServerWorker> workerList = server.getWorkerList();
-            System.out.println("User logged off successfully: " + login + "\r\n");
-            String offlineMsg = "offline " + login + "\r\n";
-            for (ServerWorker worker : workerList) {
-                worker.send(offlineMsg);
+            try (clientSocket) {
+                List<ServerWorker> workerList = server.getWorkerList();
+                System.out.println("User logged off successfully: " + login + "\r\n");
+                String offlineMsg = "offline " + login + "\r\n";
+                for (ServerWorker worker : workerList) {
+                    worker.send(offlineMsg);
+                }
             }
-            clientSocket.close();
         }
     }
 
@@ -256,6 +260,15 @@ public class ServerWorker extends Thread {
     private void setUserId() {
         try {
             this.userid = database.getUserId(login);
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void addFriend(String[] tokens) {
+        String friendUsername = tokens[1];
+        try {
+            database.addFriend(userid, login, friendUsername);
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }

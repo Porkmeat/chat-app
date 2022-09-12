@@ -43,6 +43,7 @@
                            </font>
                         </Label>
                         <Separator layoutX="8.0" layoutY="62.0" prefHeight="0.0" prefWidth="827.0" AnchorPane.bottomAnchor="-3.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" />
+                        <Button layoutX="235.0" layoutY="18.0" mnemonicParsing="false" onAction="#addFriend" text="Button" />
                      </children>
                   </AnchorPane>
                   <ListView fx:id="userlist" prefHeight="547.0" prefWidth="301.0" style="-fx-background-color: transparent;" />

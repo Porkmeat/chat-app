@@ -130,6 +130,13 @@ public class MainScreenController implements StatusListener, MessageListener {
             }
         });
     }
+    
+    @FXML
+    public void addFriend() throws IOException {
+       
+            client.addFriend("jim");
+            
+    }
 
     private void autoScroll() {
         if (activeChat != null) {
