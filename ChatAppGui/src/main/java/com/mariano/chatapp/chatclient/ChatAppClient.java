@@ -7,7 +7,6 @@ package com.mariano.chatapp.chatclient;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
@@ -61,14 +60,6 @@ public class ChatAppClient {
             System.err.println("Connection failed!");
         } else {
             System.out.println("Connection successful!");
-//            if (client.login("guest", "guest")) {
-//                System.out.println("Login successful!");
-//                
-//                client.msg("jim", "Hello World!");
-//            } else {
-//                System.err.println("Login failed!");
-//            }
-          //  client.logoff();
         }
     }
 

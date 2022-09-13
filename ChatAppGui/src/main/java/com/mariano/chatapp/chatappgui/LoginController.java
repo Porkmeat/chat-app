@@ -4,6 +4,7 @@ import com.mariano.chatapp.chatclient.ChatAppClient;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -30,8 +31,15 @@ public class LoginController {
 
     @FXML
     private PasswordField passwordField;
-    
-    
+
+    @FXML
+    private TextField newUsernameField;
+
+    @FXML
+    private PasswordField newUserPasswordField;
+
+    @FXML
+    private PasswordField newUserPasswordConfirmField;
 
     @FXML
     private void login() {
@@ -39,7 +47,6 @@ public class LoginController {
             if (client.login(usernameField.getText(), passwordField.getText())) {
                 System.out.println("Connection successful!");
                 switchToMainScene();
-                // 
             } else {
                 System.out.println("Connection failed!");
             }
@@ -47,41 +54,51 @@ public class LoginController {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     @FXML
     private void createUser() {
-        try {
-            if (client.createUser(usernameField.getText(), passwordField.getText())) {
-                System.out.println("Account created!");
-            } else {
-                System.out.println("Failed!");
+        String user = newUsernameField.getText();
+        String pass = newUserPasswordField.getText();
+        if (user.equals(newUserPasswordConfirmField.getText())) {
+            try {
+                if (client.createUser(user, pass)) {
+                    System.out.println("Account created!");
+                    usernameField.setText(user);
+                    passwordField.setText(pass);
+                    login();
+                } else {
+                    System.out.println("Failed!");
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public void setClient(ChatAppClient client) {
         this.client = client;
     }
-    
+
     private void switchToMainScene() throws IOException {
         String username = usernameField.getText();
+
+        usernameField.clear();
+        passwordField.clear();
+
         FXMLLoader fxmlLoader = new FXMLLoader(Appgui.class.getResource("mainscreenfxml.fxml"));
         scene = new Scene(fxmlLoader.load(), 640, 480);
-        stage = (Stage)usernameField.getScene().getWindow();
-        
+        stage = (Stage) usernameField.getScene().getWindow();
+
         //send client to controller
         MainScreenController controller = fxmlLoader.getController();
         controller.setupController(client, username);
-        
+
         stage.setOnCloseRequest(event -> {
             event.consume();
             controller.logoff(stage);
-            });
+        });
 
         scene.getStylesheets().add(getClass().getResource("fxml.css").toExternalForm());
-
 
         stage.setScene(scene);
         stage.show();

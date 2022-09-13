@@ -39,6 +39,8 @@ public class MainScreenController implements StatusListener, MessageListener {
     private TextField chatinput;
     @FXML
     private ScrollPane chatwindow;
+    @FXML
+    private TextField addFriendField;
 
     public void setupController(ChatAppClient client, String username) throws IOException {
         mainusername.setText(username);
@@ -133,9 +135,11 @@ public class MainScreenController implements StatusListener, MessageListener {
     
     @FXML
     public void addFriend() throws IOException {
-       
-            client.addFriend("jim");
-            
+        String friendName = addFriendField.getText();
+            client.addFriend(friendName);
+            Platform.runLater(() -> {
+                addFriendField.clear();
+            });
     }
 
     private void autoScroll() {

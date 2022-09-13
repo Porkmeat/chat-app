@@ -18,20 +18,22 @@ public class MySqlConnection {
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
 
-    public boolean isUsernameAvailable(String username) throws Exception {
+    public int getUserId(String username) throws Exception {
         try {
             System.out.println("connecting");
 
             connect();
             preparedStatement = connect
-                    .prepareStatement("SELECT COUNT(1) FROM user WHERE user_login = ?;");
+                    .prepareStatement("SELECT user_id FROM user WHERE user_login = ?;");
             preparedStatement.setString(1, username);
 
             resultSet = preparedStatement.executeQuery();
 
-            resultSet.next();
-
-            return resultSet.getInt(1) == 0;
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            } else {
+                return 0;
+            }
 
         } catch (Exception ex) {
             throw ex;
@@ -58,18 +60,9 @@ public class MySqlConnection {
 
     }
     
-    public void addFriend(int userId,String username, String friendName) throws Exception {
+    public void addFriend(int userId,String username,int friendId, String friendName) throws Exception {
         try {
             connect();
-            preparedStatement = connect
-                    .prepareStatement("SELECT user_id FROM user WHERE user_login = ?;");
-            preparedStatement.setString(1, friendName);
-
-            ResultSet results = preparedStatement.executeQuery();
-            results.next();
-            
-            int friendId = results.getInt(1);
-            
             // generate unique id for friends chat
             long chatUuid = (long)Math.max(userId, friendId) << 32 + Math.min(userId, friendId);
             
@@ -179,25 +172,5 @@ public class MySqlConnection {
         } catch (SQLException e) {
 
         }
-    }
-
-    public int getUserId(String username) throws Exception {
-        try {
-            connect();
-            preparedStatement = connect
-                    .prepareStatement("SELECT user_id FROM user WHERE user_login = ?;");
-            preparedStatement.setString(1, username);
-
-            ResultSet results = preparedStatement.executeQuery();
-            
-            results.next();
-            return results.getInt(1);
-            
-            
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
-            close();
-        }   
     }
 }

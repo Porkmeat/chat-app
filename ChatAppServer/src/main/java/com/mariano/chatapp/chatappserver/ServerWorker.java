@@ -229,7 +229,7 @@ public class ServerWorker extends Thread {
         System.out.println("trying to create");
 
         try {
-            if (database.isUsernameAvailable(username)) {
+            if (database.getUserId(username) == 0) {
                 database.addNewUser(username, hashedpass, salt);
                 System.out.println("account created");
                 String response = "account created\r\n";
@@ -245,11 +245,13 @@ public class ServerWorker extends Thread {
 
     private boolean checkLogin(String username, String password) {
         try {
-            if (!database.isUsernameAvailable(username)) {
+            if (database.getUserId(username) > 0) {
                 int salt = database.getSalt(username);
                 String saltedpass = password + String.valueOf(salt);
                 String hashedpass = DigestUtils.sha256Hex(saltedpass);
                 return database.checkPassword(username, hashedpass);
+            } else {
+                System.out.println("Wrong username or password!");
             }
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
@@ -268,7 +270,12 @@ public class ServerWorker extends Thread {
     private void addFriend(String[] tokens) {
         String friendUsername = tokens[1];
         try {
-            database.addFriend(userid, login, friendUsername);
+            int friendId = database.getUserId(friendUsername);
+            if (friendId > 0) {
+            database.addFriend(userid, login, friendId, friendUsername);
+            } else {
+                System.out.println("User doesn't exist");
+            }
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
