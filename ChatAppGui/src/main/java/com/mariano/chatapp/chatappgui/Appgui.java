@@ -28,17 +28,6 @@ public class Appgui extends Application {
         stage.setScene(scene);
         stage.show();
     }
-    
-//    static void setRoot(String fxml) throws IOException {
-//        scene.setRoot(loadFXML(fxml));
-//    }
-
-//    private static Parent loadFXML(String fxml) throws IOException {
-//        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml));
-//        LoginController controller = fxmlLoader.getController();
-//        controller.setClient(client);
-//        return fxmlLoader.load();
-//    }
 
 
     public static void main(String[] args) {
