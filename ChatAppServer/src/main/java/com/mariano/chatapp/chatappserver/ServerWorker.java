@@ -46,6 +46,10 @@ public class ServerWorker extends Thread {
     public String getLogin() {
         return login;
     }
+    
+    public int getUserid() {
+        return userid;
+    }
 
     private void handleCurrentConnections(final Socket clientSocket) throws InterruptedException, IOException {
         InputStream inputStream = clientSocket.getInputStream();
@@ -165,6 +169,7 @@ public class ServerWorker extends Thread {
         if (tokens.length == 3) {
             String recipient = tokens[1];
             String message = tokens[2];
+            int recipientid = 0;
             boolean isTopic = recipient.charAt(0) == '#';
 
             List<ServerWorker> workerList = server.getWorkerList();
@@ -177,10 +182,18 @@ public class ServerWorker extends Thread {
                         worker.send(outMsg);
                     }
                 } else if (recipient.equalsIgnoreCase(worker.getLogin())) {
+                    recipientid = worker.getUserid();
                     String outMsg = "msg " + login + " " + message + "\r\n";
                     worker.send(outMsg);
                 }
             }
+            try {
+                database.saveMsg(userid,recipientid,message);
+            } catch (Exception ex) {
+                System.out.println("failed to save message");
+                Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
         } else {
             send("Syntax error\r\n");
         }

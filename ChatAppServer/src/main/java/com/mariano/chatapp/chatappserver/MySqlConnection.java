@@ -155,7 +155,7 @@ public class MySqlConnection {
                 .getConnection("jdbc:mysql://localhost:3306/chatapp_schema", "javatest", "Java1test2");
         System.out.println("connected");
     }
-    // You need to close the resultSet
+    
     private void close() {
         try {
             if (resultSet != null) {
@@ -171,6 +171,35 @@ public class MySqlConnection {
             }
         } catch (SQLException e) {
 
+        }
+    }
+
+    public void saveMsg(int userid, int recipientid, String message) throws Exception {
+        try {
+            connect();
+            // generate unique id for friends chat
+            long chatUuid = (long)Math.max(userid, recipientid) << 32 + Math.min(userid, recipientid);
+            
+            preparedStatement = connect
+                    .prepareStatement("INSERT INTO message (message_datetime,message_text,message_chat_uuid,message_user_id,message_seen) "
+                            + "VALUES (NOW(),?,"+chatUuid+",?,0);");
+            
+            preparedStatement.setString(1, message);
+            preparedStatement.setInt(2, userid);
+
+            preparedStatement.executeUpdate();
+            
+            preparedStatement = connect
+                    .prepareStatement("UPDATE chat SET chat_user_sender = ?, last_message = ?, last_message_time = NOW(), last_message_seen = 0 WHERE chat_uuid = "+chatUuid+";");
+            
+            preparedStatement.setInt(1, userid);
+            preparedStatement.setString(2, message);
+
+            preparedStatement.executeUpdate();
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
         }
     }
 }
