@@ -47,10 +47,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         mainusername.setText(username);
         this.client = client;
         this.client.addStatusListener(this);
-        this.client.requestOnlineUsers(username);
+        this.client.requestOnlineUsers();
         this.client.addMessageListener(this);
         this.client.addRequestListener(this);
-        // add request
+        this.client.fetchRequests();
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> ov, String t, String t1) {

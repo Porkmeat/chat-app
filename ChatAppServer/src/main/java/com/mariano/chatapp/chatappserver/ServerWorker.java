@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +47,7 @@ public class ServerWorker extends Thread {
     public String getLogin() {
         return login;
     }
-    
+
     public int getUserid() {
         return userid;
     }
@@ -191,12 +190,12 @@ public class ServerWorker extends Thread {
                 }
             }
             try {
-                database.saveMsg(userid,recipientid,message);
+                database.saveMsg(userid, recipientid, message);
             } catch (Exception ex) {
                 System.out.println("failed to save message");
                 Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
         } else {
             send("Syntax error\r\n");
         }
@@ -288,7 +287,16 @@ public class ServerWorker extends Thread {
         try {
             int friendId = database.getUserId(friendUsername);
             if (friendId > 0) {
-            database.addFriend(userid, login, friendId, friendUsername);
+                database.addFriend(userid, login, friendId, friendUsername);
+                List<ServerWorker> workerList = server.getWorkerList();
+                for (ServerWorker worker : workerList) {
+                    if (friendUsername.equals(worker.getLogin())) {
+                        if (worker.getLogin() != null) {
+                            String msg = "request " + worker.getLogin() + "\r\n";
+                            send(msg);
+                        }
+                    }
+                }
             } else {
                 System.out.println("User doesn't exist");
             }
@@ -302,11 +310,11 @@ public class ServerWorker extends Thread {
             ArrayList<String> requests = database.getRequests(userid);
             for (String request : requests) {
                 if (request != null) {
-                String msg = "request " + request + "\r\n";
-                send(msg);
+                    String msg = "request " + request + "\r\n";
+                    send(msg);
                 }
             }
-            
+
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -89,8 +89,8 @@ public class ChatAppClient {
         }
     }
 
-    public void requestOnlineUsers(String username) throws IOException {
-        String cmd = "getusers " + username + "\r\n";
+    public void requestOnlineUsers() throws IOException {
+        String cmd = "getusers\r\n";
         serverOut.write(cmd.getBytes());
     }
 
@@ -209,5 +209,10 @@ public class ChatAppClient {
         for (RequestListener listener : requestListeners) {
             listener.request(username);
         }
+    }
+
+    public void fetchRequests() throws IOException {
+        String cmd = "getrequests\r\n";
+        serverOut.write(cmd.getBytes());
     }
 }
