@@ -25,6 +25,7 @@ public class ChatAppClient {
     private BufferedReader reader;
     private final ArrayList<StatusListener> statusListeners = new ArrayList<>();
     private final ArrayList<MessageListener> messageListeners = new ArrayList<>();
+    private final ArrayList<RequestListener> requestListeners = new ArrayList<>();
 
     public ChatAppClient(String serverName, int port) {
         this.serverName = serverName;
@@ -32,28 +33,25 @@ public class ChatAppClient {
     }
 
     public static void main(String[] args) throws IOException {
-        
+
         ChatAppClient client = new ChatAppClient("localhost", 8818);
-        
-// status listener to listen for online/offline status of other users
-        
 
-        client.addStatusListener(new StatusListener() {
-            @Override
-            public void online(String username) {
-                System.out.println("ONLINE: " + username);
-            }
-
-            @Override
-            public void offline(String username) {
-                System.out.println("OFFLINE: " + username);
-            }
-        });
-        
-        // functional interface Lambda
-        client.addMessageListener((String fromUser, String message) -> {
-            System.out.println("You got a message from " + fromUser+": " + message);
-        });
+//        client.addStatusListener(new StatusListener() {
+//            @Override
+//            public void online(String username) {
+//                System.out.println("ONLINE: " + username);
+//            }
+//
+//            @Override
+//            public void offline(String username) {
+//                System.out.println("OFFLINE: " + username);
+//            }
+//        });
+//
+//        // functional interface Lambda
+//        client.addMessageListener((String fromUser, String message) -> {
+//            System.out.println("You got a message from " + fromUser + ": " + message);
+//        });
 
         // try to connect
         if (!client.connect()) {
@@ -90,12 +88,12 @@ public class ChatAppClient {
             return false;
         }
     }
-    
+
     public void requestOnlineUsers(String username) throws IOException {
-        String cmd = "getusers " + username +"\r\n";
+        String cmd = "getusers " + username + "\r\n";
         serverOut.write(cmd.getBytes());
     }
-    
+
     public void logoff() throws IOException {
         String cmd = "logoff\r\n";
         serverOut.write(cmd.getBytes());
@@ -109,6 +107,14 @@ public class ChatAppClient {
         statusListeners.remove(listener);
     }
 
+    public void addRequestListener(RequestListener listener) {
+        requestListeners.add(listener);
+    }
+
+    public void removeRequestListener(RequestListener listener) {
+        requestListeners.remove(listener);
+    }
+
     private void startServerListener() {
         Thread t = new Thread() {
             @Override
@@ -118,12 +124,12 @@ public class ChatAppClient {
         };
         t.start();
     }
-    
-    public void addMessageListener (MessageListener listener) {
+
+    public void addMessageListener(MessageListener listener) {
         messageListeners.add(listener);
     }
-    
-    public void removeMessageListener (MessageListener listener) {
+
+    public void removeMessageListener(MessageListener listener) {
         messageListeners.remove(listener);
     }
 
@@ -138,6 +144,8 @@ public class ChatAppClient {
                         handleOnline(tokens);
                     } else if ("offline".equalsIgnoreCase(cmd)) {
                         handleOffline(tokens);
+                    } else if ("request".equalsIgnoreCase(cmd)) {
+                        handleRequest(tokens);
                     } else if ("msg".equalsIgnoreCase(cmd)) {
                         String[] tokensMsg = StringUtils.split(line, null, 3);
                         handleMessage(tokensMsg);
@@ -157,24 +165,24 @@ public class ChatAppClient {
     }
 
     private void handleOnline(String[] tokens) {
-       String username = tokens[1];
-       for (StatusListener listener : statusListeners) {
-           listener.online(username);
-       }
+        String username = tokens[1];
+        for (StatusListener listener : statusListeners) {
+            listener.online(username);
+        }
     }
-    
+
     private void handleOffline(String[] tokens) {
-       String username = tokens[1];
-       for (StatusListener listener : statusListeners) {
-           listener.offline(username);
-       }
+        String username = tokens[1];
+        for (StatusListener listener : statusListeners) {
+            listener.offline(username);
+        }
     }
 
     public void msg(String recipient, String message) throws IOException {
-        String cmd = "msg " + recipient + " " + message +"\r\n";
+        String cmd = "msg " + recipient + " " + message + "\r\n";
         serverOut.write(cmd.getBytes());
     }
-    
+
     public boolean createUser(String username, String password) throws IOException {
         String cmd = "newuser " + username + " " + password + "\r\n";
         serverOut.write(cmd.getBytes());
@@ -182,7 +190,6 @@ public class ChatAppClient {
 
         return response.equals("account created");
     }
-
 
     private void handleMessage(String[] tokensMsg) {
         String fromUser = tokensMsg[1];
@@ -195,5 +202,12 @@ public class ChatAppClient {
     public void addFriend(String friendname) throws IOException {
         String cmd = "addfriend " + friendname + "\r\n";
         serverOut.write(cmd.getBytes());
+    }
+
+    private void handleRequest(String[] tokens) {
+        String username = tokens[1];
+        for (RequestListener listener : requestListeners) {
+            listener.request(username);
+        }
     }
 }

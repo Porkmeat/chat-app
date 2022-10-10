@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 public class MySqlConnection {
 
@@ -67,7 +68,7 @@ public class MySqlConnection {
             long chatUuid = (long)Math.max(userId, friendId) << 32 + Math.min(userId, friendId);
             
             preparedStatement = connect
-                    .prepareStatement("INSERT INTO user_contacts (contact_user_id,contact_friend_id,contact_alias,contact_status,contact_chat_uuid) "
+                    .prepareStatement("INSERT INTO user_contacts (contact_user_id,contact_friend_id,contact_alias,contact_status,chat_uuid) "
                             + "VALUES (?,?,?,1,"+chatUuid+"),"
                             + "(?,?,?,2,"+chatUuid+");");
             
@@ -94,10 +95,10 @@ public class MySqlConnection {
                     .prepareStatement("SELECT user_password FROM user WHERE user_login = ?;");
             preparedStatement.setString(1, username);
 
-            ResultSet results = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             
-            results.next();
-            String userpass = results.getString(1);
+            resultSet.next();
+            String userpass = resultSet.getString(1);
             
             return userpass.equals(password);
             
@@ -116,10 +117,10 @@ public class MySqlConnection {
                     .prepareStatement("SELECT salt FROM user WHERE user_login = ?;");
             preparedStatement.setString(1, username);
 
-            ResultSet results = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             
-            results.next();
-            return results.getInt(1);
+            resultSet.next();
+            return resultSet.getInt(1);
             
             
         } catch (Exception ex) {
@@ -133,13 +134,16 @@ public class MySqlConnection {
         try {
             connect();
             preparedStatement = connect
-                    .prepareStatement("SELECT salt FROM user WHERE user_login = ?;");
+                    .prepareStatement("SELECT uc.contact_friend_id, uc.contact_alias,"
+                            + "uc.contact_status, chat_uuid, c.chat_user_sender,"
+                            + "c.last_message, c.last_message_time, c.last_message_seen,"
+                            + "c.unseen_chats FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) WHERE uc.contact_user_id = ?;");
             preparedStatement.setInt(1, userid);
 
-            ResultSet results = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             
             
-            return results;
+            return resultSet;
             
             
         } catch (Exception ex) {
@@ -181,7 +185,7 @@ public class MySqlConnection {
             long chatUuid = (long)Math.max(userid, recipientid) << 32 + Math.min(userid, recipientid);
             
             preparedStatement = connect
-                    .prepareStatement("INSERT INTO message (message_datetime,message_text,message_chat_uuid,message_user_id,message_seen) "
+                    .prepareStatement("INSERT INTO message (message_datetime,message_text,chat_uuid,message_user_id,message_seen) "
                             + "VALUES (NOW(),?,"+chatUuid+",?,0);");
             
             preparedStatement.setString(1, message);
@@ -196,6 +200,48 @@ public class MySqlConnection {
             preparedStatement.setString(2, message);
 
             preparedStatement.executeUpdate();
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+    
+    public ResultSet fetchMessages(int chatid) throws Exception {
+        try {
+            connect();
+            preparedStatement = connect
+                    .prepareStatement("SELECT salt FROM user WHERE user_login = ?;");
+            preparedStatement.setInt(1, chatid);
+
+            resultSet = preparedStatement.executeQuery();
+            
+            
+            return resultSet;
+            
+            
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+
+    public ArrayList<String> getRequests(int userid) throws Exception {
+        ArrayList<String> requests = new ArrayList<>();
+        try {
+            connect();
+            preparedStatement = connect
+                    .prepareStatement("SELECT contact_alias FROM user_contacts WHERE contact_user_id = ? AND contact_status = 2 ORDER BY contact_alias;");
+            preparedStatement.setInt(1, userid);
+
+            resultSet = preparedStatement.executeQuery();
+            
+            while (resultSet.next()) {
+                requests.add(resultSet.getString(1));
+            }
+            
+            return requests;
         } catch (Exception ex) {
             throw ex;
         } finally {

@@ -2,6 +2,7 @@ package com.mariano.chatapp.chatappgui;
 
 import com.mariano.chatapp.chatclient.ChatAppClient;
 import com.mariano.chatapp.chatclient.MessageListener;
+import com.mariano.chatapp.chatclient.RequestListener;
 import com.mariano.chatapp.chatclient.StatusListener;
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-public class MainScreenController implements StatusListener, MessageListener {
+public class MainScreenController implements StatusListener, MessageListener, RequestListener {
 
     private ChatAppClient client;
     private String currentChat;
@@ -48,6 +49,8 @@ public class MainScreenController implements StatusListener, MessageListener {
         this.client.addStatusListener(this);
         this.client.requestOnlineUsers(username);
         this.client.addMessageListener(this);
+        this.client.addRequestListener(this);
+        // add request
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> ov, String t, String t1) {
@@ -146,6 +149,11 @@ public class MainScreenController implements StatusListener, MessageListener {
         if (activeChat != null) {
             activeChat.scrollTo(activeChat.getItems().size());
         }
+    }
+
+    @Override
+    public void request(String fromUser) {
+        
     }
 
 }

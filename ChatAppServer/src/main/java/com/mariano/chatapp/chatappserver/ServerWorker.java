@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -75,7 +77,9 @@ public class ServerWorker extends Thread {
                 } else if ("leave".equalsIgnoreCase(cmd)) {
                     handleLeave(tokens);
                 } else if ("getusers".equalsIgnoreCase(cmd)) {
-                    getOnlineUsers(tokens);
+                    getOnlineUsers();
+                } else if ("getrequests".equalsIgnoreCase(cmd)) {
+                    getFriendRequests();
                 } else if ("newuser".equalsIgnoreCase(cmd)) {
                     createUser(outputStream, tokens);
                 } else if ("addfriend".equalsIgnoreCase(cmd)) {
@@ -138,11 +142,10 @@ public class ServerWorker extends Thread {
         }
     }
 
-    private void getOnlineUsers(String[] tokens) throws IOException {
-        String username = tokens[1];
+    private void getOnlineUsers() throws IOException {
         List<ServerWorker> workerList = server.getWorkerList();
         for (ServerWorker worker : workerList) {
-            if (!username.equals(worker.getLogin())) {
+            if (!login.equals(worker.getLogin())) {
                 if (worker.getLogin() != null) {
                     String msg2 = "online " + worker.getLogin() + "\r\n";
                     send(msg2);
@@ -289,6 +292,21 @@ public class ServerWorker extends Thread {
             } else {
                 System.out.println("User doesn't exist");
             }
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void getFriendRequests() {
+        try {
+            ArrayList<String> requests = database.getRequests(userid);
+            for (String request : requests) {
+                if (request != null) {
+                String msg = "request " + request + "\r\n";
+                send(msg);
+                }
+            }
+            
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
