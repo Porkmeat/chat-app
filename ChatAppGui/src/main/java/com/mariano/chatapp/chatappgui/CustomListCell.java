@@ -15,7 +15,7 @@ import javafx.scene.text.Text;
  */
 public class CustomListCell extends ListCell<Friend> {
         private HBox content;
-        private Avatar profilePicture;
+        private Text profilePicture;
         private Text username;
         private Text lastMsg;
         private Text timestamp;
