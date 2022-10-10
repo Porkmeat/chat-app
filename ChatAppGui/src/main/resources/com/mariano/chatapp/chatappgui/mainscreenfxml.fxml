@@ -73,7 +73,7 @@
                                  </padding></FlowPane>
                            </content>
                         </Tab>
-                      <Tab disable="true" text="Requests">
+                      <Tab fx:id="requestTab" disable="true" text="Requests">
                            <content>
                               <ListView fx:id="requestlist" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: transparent;" />
                            </content>

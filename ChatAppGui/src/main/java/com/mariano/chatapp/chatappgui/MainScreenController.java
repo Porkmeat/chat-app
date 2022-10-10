@@ -17,6 +17,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -27,9 +28,12 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private String currentChat;
     private final HashMap<String, ListView> activeChats = new HashMap<>();
     private ListView<String> activeChat;
+    private String requester;
 
     @FXML
     private ListView<String> userlist;
+    @FXML
+    private ListView<String> requestlist;
     @FXML
     private Label mainusername;
     @FXML
@@ -42,6 +46,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private ScrollPane chatwindow;
     @FXML
     private TextField addFriendField;
+    @FXML
+    private Tab requestTab;
 
     public void setupController(ChatAppClient client, String username) throws IOException {
         mainusername.setText(username);
@@ -70,6 +76,14 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                         });
                     }
                 }
+            }
+        });
+        
+        requestlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> ov, String t, String t1) {
+                requester = requestlist.getSelectionModel().getSelectedItem();
+                
             }
         });
     }
@@ -153,7 +167,12 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @Override
     public void request(String fromUser) {
-        
+        if (requestTab.isDisabled()) {
+            requestTab.setDisable(false);
+        }
+        Platform.runLater(() -> {
+            requestlist.getItems().add(fromUser);
+        });
     }
 
 }

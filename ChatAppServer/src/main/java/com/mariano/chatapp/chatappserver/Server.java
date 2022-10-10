@@ -18,7 +18,7 @@ public class Server extends Thread {
 
     private final int serverPort;
     
-    private ArrayList<ServerWorker> workerList = new ArrayList<>();
+    private final ArrayList<ServerWorker> workerList = new ArrayList<>();
 
     public Server(int serverPort) {
         this.serverPort = serverPort;
