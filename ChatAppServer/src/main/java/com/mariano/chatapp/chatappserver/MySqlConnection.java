@@ -139,10 +139,12 @@ public class MySqlConnection {
         try {
             connect();
             preparedStatement = connect
-                    .prepareStatement("SELECT uc.contact_friend_id, uc.contact_alias,"
+                    .prepareStatement("SELECT  u.user_login, uc.contact_friend_id, uc.contact_alias,"
                             + "uc.contact_status, chat_uuid, c.chat_user_sender,"
                             + "c.last_message, c.last_message_time, c.last_message_seen,"
-                            + "c.unseen_chats FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) WHERE uc.contact_user_id = ?;");
+                            + "c.unseen_chats FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
+                            + "INNER JOIN user u ON u.user_id = uc.contact_friend_id "
+                            + "WHERE uc.contact_user_id = ? AND uc.contact_status = 3;");
             preparedStatement.setInt(1, userid);
 
             resultSet = preparedStatement.executeQuery();
