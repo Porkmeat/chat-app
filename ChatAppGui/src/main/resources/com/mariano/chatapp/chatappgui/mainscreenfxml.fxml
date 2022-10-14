@@ -16,6 +16,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -49,9 +50,9 @@
                         
                      </children>
                   </AnchorPane>
-                  <TabPane prefHeight="516.0" prefWidth="301.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+                  <TabPane fx:id="mainTabPane" prefHeight="516.0" prefWidth="301.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
                     <tabs>
-                      <Tab text="Contacts">
+                      <Tab fx:id="contactsTab" text="Contacts">
                            <content>
                               <ListView fx:id="userlist" prefHeight="48.0" prefWidth="301.0" style="-fx-background-color: transparent;" />
                            </content>
@@ -75,7 +76,18 @@
                         </Tab>
                       <Tab fx:id="requestTab" disable="true" text="Requests">
                            <content>
-                              <ListView fx:id="requestlist" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: transparent;" />
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                 <children>
+                                    <ListView fx:id="requestlist" prefWidth="301.0" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                    <HBox fx:id="requestButtons" alignment="CENTER" disable="true" layoutY="459.0" prefHeight="60.0" prefWidth="301.0" spacing="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                       <children>
+                                          <Button fx:id="requestAccept" mnemonicParsing="false" onAction="#acceptRequest" text="Accept" textFill="#0d8600" />
+                                          <Button fx:id="requestDeny" mnemonicParsing="false" onAction="#denyRequest" text="Deny" textFill="#e13b3b" />
+                                          <Button fx:id="requestBlock" mnemonicParsing="false" onAction="#blockRequest" text="Block" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
                            </content>
                         </Tab>
                     </tabs>

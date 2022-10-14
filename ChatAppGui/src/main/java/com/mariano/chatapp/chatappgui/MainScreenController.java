@@ -18,8 +18,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 public class MainScreenController implements StatusListener, MessageListener, RequestListener {
@@ -48,6 +50,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private TextField addFriendField;
     @FXML
     private Tab requestTab;
+    @FXML
+    private HBox requestButtons;
+    @FXML
+    private TabPane mainTabPane;
 
     public void setupController(ChatAppClient client, String username) throws IOException {
         mainusername.setText(username);
@@ -78,12 +84,15 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 }
             }
         });
-        
+
         requestlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> ov, String t, String t1) {
                 requester = requestlist.getSelectionModel().getSelectedItem();
-                
+                System.out.println(requestlist.getItems().toString());
+                if (requester != null && requestButtons.isDisable()) {
+                    requestButtons.setDisable(false);
+                }
             }
         });
     }
@@ -149,14 +158,14 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             }
         });
     }
-    
+
     @FXML
     public void addFriend() throws IOException {
         String friendName = addFriendField.getText();
-            client.addFriend(friendName);
-            Platform.runLater(() -> {
-                addFriendField.clear();
-            });
+        client.addFriend(friendName);
+        Platform.runLater(() -> {
+            addFriendField.clear();
+        });
     }
 
     private void autoScroll() {
@@ -172,6 +181,66 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         }
         Platform.runLater(() -> {
             requestlist.getItems().add(fromUser);
+        });
+    }
+
+    @FXML
+    public void acceptRequest() {
+        try {
+            client.respondToRequest(requester, 1);
+            System.out.println("Added friend " + requester);
+            Platform.runLater(() -> {
+                if (requestlist.getItems().remove(requester)) {
+                    requester = null;
+                }
+            });
+            closeRequestTab();
+        } catch (IOException ex) {
+            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @FXML
+    public void denyRequest() {
+        try {
+            client.respondToRequest(requester, 2);
+            System.out.println("Request denied: " + requester);
+            Platform.runLater(() -> {
+                if (requestlist.getItems().remove(requester)) {
+                    requester = null;
+                }
+            });
+            closeRequestTab();
+        } catch (IOException ex) {
+            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @FXML
+    public void blockRequest() {
+        try {
+            client.respondToRequest(requester, 3);
+            System.out.println("Blocked user " + requester);
+            Platform.runLater(() -> {
+                if (requestlist.getItems().remove(requester)) {
+                    requester = null;
+                }
+            });
+            closeRequestTab();
+        } catch (IOException ex) {
+            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void closeRequestTab() {
+        Platform.runLater(() -> {
+            if (requestlist.getItems().isEmpty()) {
+                requestButtons.setDisable(true);
+                mainTabPane.getSelectionModel().selectFirst();
+                requestTab.setDisable(true);
+            } else {
+                requester = requestlist.getSelectionModel().getSelectedItem();
+            }
         });
     }
 

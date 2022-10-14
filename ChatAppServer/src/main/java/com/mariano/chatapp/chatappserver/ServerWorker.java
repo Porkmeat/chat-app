@@ -83,6 +83,12 @@ public class ServerWorker extends Thread {
                     createUser(outputStream, tokens);
                 } else if ("addfriend".equalsIgnoreCase(cmd)) {
                     addFriend(tokens);
+                } else if ("acceptrequest".equalsIgnoreCase(cmd)) {
+                    acceptRequest(tokens);
+                } else if ("denyrequest".equalsIgnoreCase(cmd)) {
+                    denyRequest(tokens);
+                } else if ("blockrequest".equalsIgnoreCase(cmd)) {
+                    blockRequest(tokens);
                 } else {
                     String msg = "Unknown " + cmd + "\r\n";
                     outputStream.write(msg.getBytes());
@@ -292,8 +298,8 @@ public class ServerWorker extends Thread {
                 for (ServerWorker worker : workerList) {
                     if (friendUsername.equals(worker.getLogin())) {
                         if (worker.getLogin() != null) {
-                            String msg = "request " + worker.getLogin() + "\r\n";
-                            send(msg);
+                            String msg = "request " + login + "\r\n";
+                            worker.send(msg);
                         }
                     }
                 }
@@ -315,6 +321,48 @@ public class ServerWorker extends Thread {
                 }
             }
 
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void acceptRequest(String[] tokens) {
+        String requester = tokens[1];
+        try {
+            int requesterId = database.getUserId(requester);
+            if (requesterId > 0) {
+                database.acceptRequest(userid, requesterId);
+            } else {
+                System.out.println("Username Error");
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void denyRequest(String[] tokens) {
+        String requester = tokens[1];
+        try {
+            int requesterId = database.getUserId(requester);
+            if (requesterId > 0) {
+                database.denyRequest(userid, requesterId);
+            } else {
+                System.out.println("Username Error");
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void blockRequest(String[] tokens) {
+        String requester = tokens[1];
+        try {
+            int requesterId = database.getUserId(requester);
+            if (requesterId > 0) {
+                database.blockRequest(userid, requesterId);
+            } else {
+                System.out.println("Username Error");
+            }
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }

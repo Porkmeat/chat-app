@@ -65,7 +65,7 @@ public class MySqlConnection {
         try {
             connect();
             // generate unique id for friends chat
-            long chatUuid = (long)Math.max(userId, friendId) << 32 + Math.min(userId, friendId);
+            long chatUuid = generateChatUuid(userId, friendId);
             
             preparedStatement = connect
                     .prepareStatement("INSERT INTO user_contacts (contact_user_id,contact_friend_id,contact_alias,contact_status,chat_uuid) "
@@ -87,6 +87,11 @@ public class MySqlConnection {
         }
 
     }
+    
+    private long generateChatUuid(int id1, int id2) {
+        return (long)Math.max(id1, id2) << 32 + Math.min(id1, id2);
+    }
+
     
     public boolean checkPassword(String username, String password) throws Exception {
         try {
@@ -182,7 +187,7 @@ public class MySqlConnection {
         try {
             connect();
             // generate unique id for friends chat
-            long chatUuid = (long)Math.max(userid, recipientid) << 32 + Math.min(userid, recipientid);
+            long chatUuid = generateChatUuid(userid, recipientid);
             
             preparedStatement = connect
                     .prepareStatement("INSERT INTO message (message_datetime,message_text,chat_uuid,message_user_id,message_seen) "
@@ -242,6 +247,59 @@ public class MySqlConnection {
             }
             
             return requests;
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+
+    public void acceptRequest(int userid, int requesterId) throws Exception {
+        try {
+            connect();
+            long chatUuid = generateChatUuid(userid, requesterId);
+            preparedStatement = connect
+                    .prepareStatement("UPDATE user_contacts SET contact_status = 3 WHERE chat_uuid = "+chatUuid+";");
+            preparedStatement.executeUpdate();
+            
+            preparedStatement = connect
+                    .prepareStatement("INSERT INTO chat (chat_user_sender, last_message, last_message_time, chat_uuid) VALUES (?,?,NOW(),"+chatUuid+");");
+            
+            preparedStatement.setInt(1,requesterId);
+            preparedStatement.setString(2,"");
+            preparedStatement.executeUpdate();
+            
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+    
+    
+    public void denyRequest(int userid, int requesterId) throws Exception {
+        try {
+            connect();
+            preparedStatement = connect
+                    .prepareStatement("UPDATE user_contacts SET contact_status = 4 WHERE contact_user_id = ? AND contact_friend_id = ?;");
+            preparedStatement.setInt(1,userid);
+            preparedStatement.setInt(2,requesterId);
+            preparedStatement.executeUpdate();            
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+
+    public void blockRequest(int userid, int requesterId) throws Exception {
+        try {
+            connect();
+            preparedStatement = connect
+                    .prepareStatement("UPDATE user_contacts SET contact_status = 6 WHERE contact_user_id = ? AND contact_friend_id = ?;");
+            preparedStatement.setInt(1,userid);
+            preparedStatement.setInt(2,requesterId);
+            preparedStatement.executeUpdate();            
         } catch (Exception ex) {
             throw ex;
         } finally {

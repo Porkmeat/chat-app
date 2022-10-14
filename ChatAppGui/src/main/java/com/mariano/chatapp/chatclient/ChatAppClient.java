@@ -52,7 +52,6 @@ public class ChatAppClient {
 //        client.addMessageListener((String fromUser, String message) -> {
 //            System.out.println("You got a message from " + fromUser + ": " + message);
 //        });
-
         // try to connect
         if (!client.connect()) {
             System.err.println("Connection failed!");
@@ -214,5 +213,30 @@ public class ChatAppClient {
     public void fetchRequests() throws IOException {
         String cmd = "getrequests\r\n";
         serverOut.write(cmd.getBytes());
+    }
+
+    public void respondToRequest(String requester, int response) throws IOException {
+        switch (response) {
+            case 1: {
+                System.out.println("top kek " + requester);
+                String cmd = "acceptrequest " + requester + "\r\n";
+                serverOut.write(cmd.getBytes());
+                break;
+            }
+            case 2: {
+                System.out.println("no kek " + requester);
+                String cmd = "denyrequest " + requester + "\r\n";
+                serverOut.write(cmd.getBytes());
+                break;
+            }
+            case 3: {
+                System.out.println("blocked " + requester);
+                String cmd = "blockrequest " + requester + "\r\n";
+                serverOut.write(cmd.getBytes());
+                break;
+            }
+            default:
+                break;
+        }
     }
 }
