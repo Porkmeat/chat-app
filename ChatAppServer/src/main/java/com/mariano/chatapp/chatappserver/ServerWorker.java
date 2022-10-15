@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -14,6 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -28,6 +31,7 @@ public class ServerWorker extends Thread {
     private final Server server;
     private OutputStream outputStream;
     private final HashSet<String> topicSet = new HashSet<>();
+    private HashMap<String, Integer> friendList = new HashMap<>();
 
     public ServerWorker(Server server, Socket clientSocket) {
         this.server = server;
@@ -77,6 +81,8 @@ public class ServerWorker extends Thread {
                     handleLeave(tokens);
                 } else if ("getusers".equalsIgnoreCase(cmd)) {
                     getOnlineUsers();
+                } else if ("getfriends".equalsIgnoreCase(cmd)) {
+                    fetchFriendList();
                 } else if ("getrequests".equalsIgnoreCase(cmd)) {
                     getFriendRequests();
                 } else if ("newuser".equalsIgnoreCase(cmd)) {
@@ -144,6 +150,20 @@ public class ServerWorker extends Thread {
         } else {
             String msg = "Login error\r\n";
             outputStream.write(msg.getBytes());
+        }
+    }
+
+    private void fetchFriendList() {
+        try {
+            JSONArray results = database.fetchFriends(userid);
+            System.out.println(results.toString());
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject jsonobject = results.getJSONObject(i);
+                friendList.put(jsonobject.getString("user_login"), jsonobject.getInt("contact_friend_id"));
+            }
+            System.out.println(friendList.toString());
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -339,7 +359,7 @@ public class ServerWorker extends Thread {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private void denyRequest(String[] tokens) {
         String requester = tokens[1];
         try {
@@ -353,7 +373,7 @@ public class ServerWorker extends Thread {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private void blockRequest(String[] tokens) {
         String requester = tokens[1];
         try {

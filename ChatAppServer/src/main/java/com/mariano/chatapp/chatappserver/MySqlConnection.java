@@ -11,6 +11,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MySqlConnection {
 
@@ -135,7 +137,7 @@ public class MySqlConnection {
         }
     }
     
-    public ResultSet fetchFriends(int userid) throws Exception {
+    public JSONArray fetchFriends(int userid) throws Exception {
         try {
             connect();
             preparedStatement = connect
@@ -150,7 +152,7 @@ public class MySqlConnection {
             resultSet = preparedStatement.executeQuery();
             
             
-            return resultSet;
+            return convertToJSONArray(resultSet);
             
             
         } catch (Exception ex) {
@@ -159,6 +161,23 @@ public class MySqlConnection {
             close();
         }
     }
+    
+    public static JSONArray convertToJSONArray(ResultSet resultSet)
+            throws Exception {
+        JSONArray jsonArray = new JSONArray();
+        while (resultSet.next()) {
+            JSONObject obj = new JSONObject();
+            int total_rows = resultSet.getMetaData().getColumnCount();
+            for (int i = 0; i < total_rows; i++) {
+                obj.put(resultSet.getMetaData().getColumnLabel(i + 1)
+                        .toLowerCase(), resultSet.getObject(i + 1));
+
+            }
+            jsonArray.put(obj);
+        }
+        return jsonArray;
+    }
+
 
     private void connect() throws Exception {
         System.out.println("try to connect");

@@ -209,6 +209,11 @@ public class ChatAppClient {
             listener.request(username);
         }
     }
+    
+    public void fetchFriends() throws IOException {
+        String cmd = "getfriends\r\n";
+        serverOut.write(cmd.getBytes());
+    }
 
     public void fetchRequests() throws IOException {
         String cmd = "getrequests\r\n";
