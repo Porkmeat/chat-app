@@ -5,6 +5,7 @@
 package com.mariano.chatapp.chatclient;
 
 import com.mariano.chatapp.chatappgui.Friend;
+import com.mariano.chatapp.chatappgui.MainScreenController;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class ChatAppClient {
     private final ArrayList<StatusListener> statusListeners = new ArrayList<>();
     private final ArrayList<MessageListener> messageListeners = new ArrayList<>();
     private final ArrayList<RequestListener> requestListeners = new ArrayList<>();
+    private final ArrayList<FriendListener> friendListeners = new ArrayList<>();
 
     public ChatAppClient(String serverName, int port) {
         this.serverName = serverName;
@@ -133,6 +135,14 @@ public class ChatAppClient {
     public void removeMessageListener(MessageListener listener) {
         messageListeners.remove(listener);
     }
+    
+    public void addFriendListener(FriendListener listener) {
+        friendListeners.add(listener);
+    }
+
+    public void removeFriendListener(FriendListener listener) {
+        friendListeners.remove(listener);
+    }
 
     private void serverListenLoop() {
         try {
@@ -214,7 +224,7 @@ public class ChatAppClient {
             listener.request(username);
         }
     }
-    
+
     public void fetchFriends() throws IOException {
         String cmd = "getfriends\r\n";
         serverOut.write(cmd.getBytes());
@@ -253,7 +263,11 @@ public class ChatAppClient {
     private void handleFriend(String string) {
         JSONObject jsonobject = new JSONObject(string);
         System.out.println(jsonobject.toString());
-        Friend friend = new Friend(jsonobject.getString("user_login"), jsonobject.getString("contact_alias"), 
-                jsonobject.getBoolean("friend_is_sender"), jsonobject.getInt("unseen_chats"), jsonobject.getString("last_message"), jsonobject.getString("last_message_time"));
+        Friend friend = new Friend(jsonobject.getString("user_login"), jsonobject.getString("contact_alias"),
+                jsonobject.getBoolean("friend_is_sender"), jsonobject.getInt("unseen_chats"),
+                jsonobject.getString("last_message"), jsonobject.getString("last_message_time"));
+
     }
+
+    
 }

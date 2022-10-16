@@ -1,6 +1,7 @@
 package com.mariano.chatapp.chatappgui;
 
 import com.mariano.chatapp.chatclient.ChatAppClient;
+import com.mariano.chatapp.chatclient.FriendListener;
 import com.mariano.chatapp.chatclient.MessageListener;
 import com.mariano.chatapp.chatclient.RequestListener;
 import com.mariano.chatapp.chatclient.StatusListener;
@@ -24,7 +25,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
-public class MainScreenController implements StatusListener, MessageListener, RequestListener {
+public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
 
     private ChatAppClient client;
     private String currentChat;
@@ -62,6 +63,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.requestOnlineUsers();
         this.client.addMessageListener(this);
         this.client.addRequestListener(this);
+        this.client.addFriendListener(this);
         this.client.fetchRequests();
         this.client.fetchFriends();
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
@@ -243,6 +245,13 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 requester = requestlist.getSelectionModel().getSelectedItem();
             }
         });
+    }
+
+    @Override
+    public void addChat(Friend friend) {
+//        Platform.runLater(() -> {
+//            userlist.getItems().add(friend);
+//        });
     }
 
 }
