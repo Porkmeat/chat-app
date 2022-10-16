@@ -24,6 +24,7 @@ public class CustomListCell extends ListCell<Friend> {
             super();
             username = new Text();
             lastMsg = new Text();
+            profilePicture = new Text();
             VBox vBox = new VBox(username, lastMsg);
             content = new HBox(profilePicture, vBox);
             content.setSpacing(10);
@@ -35,7 +36,7 @@ public class CustomListCell extends ListCell<Friend> {
             if (item != null && !empty) { // <== test for null item and empty parameter
                 username.setText(item.getUsername());
                 lastMsg.setText(item.getLastMsg());
-                timestamp.setText(item.getTimestamp());
+                //timestamp.setText(item.getTimestamp());
                 setGraphic(content);
             } else {
                 setGraphic(null);

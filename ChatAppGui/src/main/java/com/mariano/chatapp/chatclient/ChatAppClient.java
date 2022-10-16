@@ -5,7 +5,6 @@
 package com.mariano.chatapp.chatclient;
 
 import com.mariano.chatapp.chatappgui.Friend;
-import com.mariano.chatapp.chatappgui.MainScreenController;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -265,8 +264,11 @@ public class ChatAppClient {
         System.out.println(jsonobject.toString());
         Friend friend = new Friend(jsonobject.getString("user_login"), jsonobject.getString("contact_alias"),
                 jsonobject.getBoolean("friend_is_sender"), jsonobject.getInt("unseen_chats"),
-                jsonobject.getString("last_message"), jsonobject.getString("last_message_time"));
-
+                jsonobject.getString("last_message"), "time");
+        //jsonobject.getString("last_message_time")
+        for (FriendListener listener : friendListeners) {
+            listener.addChat(friend);
+        }
     }
 
     

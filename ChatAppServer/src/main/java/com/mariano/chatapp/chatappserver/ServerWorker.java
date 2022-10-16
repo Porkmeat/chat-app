@@ -214,7 +214,7 @@ public class ServerWorker extends Thread {
         if (tokens.length == 3) {
             String recipient = tokens[1];
             String message = tokens[2];
-            int recipientid = 0;
+            int recipientid = friendList.get(recipient);
             boolean isTopic = recipient.charAt(0) == '#';
 
             List<ServerWorker> workerList = server.getWorkerList();

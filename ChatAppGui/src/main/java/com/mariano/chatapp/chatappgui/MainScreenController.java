@@ -16,6 +16,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
@@ -24,6 +25,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
 
@@ -34,7 +36,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private String requester;
 
     @FXML
-    private ListView<String> userlist;
+    private ListView<Friend> userlist;
     @FXML
     private ListView<String> requestlist;
     @FXML
@@ -66,10 +68,17 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.addFriendListener(this);
         this.client.fetchRequests();
         this.client.fetchFriends();
-        userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+        userlist.setCellFactory(new Callback<ListView<Friend>, ListCell<Friend>>() {
             @Override
-            public void changed(ObservableValue<? extends String> ov, String t, String t1) {
-                currentChat = userlist.getSelectionModel().getSelectedItem();
+            public ListCell<Friend> call(ListView<Friend> userlist) {
+                return new CustomListCell();
+            }
+        });
+        
+        userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
+            @Override
+            public void changed(ObservableValue<? extends Friend> ov, Friend t, Friend t1) {
+                currentChat = userlist.getSelectionModel().getSelectedItem().getUsername();
                 if (mainchatusername.getText() != null && !mainchatusername.getText().equals(currentChat)) {
 
                     Platform.runLater(() -> {
@@ -121,19 +130,19 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @Override
     public void online(String username) {
-        if (!activeChats.containsKey(username)) {
-            activeChats.put(username, new ListView<String>());
-        }
-        Platform.runLater(() -> {
-            userlist.getItems().add(username);
-        });
+//        if (!activeChats.containsKey(username)) {
+//            activeChats.put(username, new ListView<String>());
+//        }
+//        Platform.runLater(() -> {
+//            userlist.getItems().add(username);
+//        });
     }
 
     @Override
     public void offline(String username) {
-        Platform.runLater(() -> {
-            userlist.getItems().remove(username);
-        });
+//        Platform.runLater(() -> {
+//            userlist.getItems().remove(username);
+//        });
     }
 
     @FXML
@@ -249,9 +258,12 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @Override
     public void addChat(Friend friend) {
-//        Platform.runLater(() -> {
-//            userlist.getItems().add(friend);
-//        });
+        if (!activeChats.containsKey(friend.getUsername())) {
+            activeChats.put(friend.getUsername(), new ListView<String>());
+        }
+        Platform.runLater(() -> {
+            userlist.getItems().add(friend);
+        });
     }
 
 }
