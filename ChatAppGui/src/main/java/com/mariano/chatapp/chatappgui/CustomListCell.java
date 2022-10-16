@@ -35,7 +35,7 @@ public class CustomListCell extends ListCell<Friend> {
             if (item != null && !empty) { // <== test for null item and empty parameter
                 username.setText(item.getUsername());
                 lastMsg.setText(item.getLastMsg());
-                timestamp.setText(Integer.toString(item.getTimestamp()));
+                timestamp.setText(item.getTimestamp());
                 setGraphic(content);
             } else {
                 setGraphic(null);

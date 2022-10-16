@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -160,7 +162,22 @@ public class ServerWorker extends Thread {
             for (int i = 0; i < results.length(); i++) {
                 JSONObject jsonobject = results.getJSONObject(i);
                 friendList.put(jsonobject.getString("user_login"), jsonobject.getInt("contact_friend_id"));
+                if (jsonobject.getInt("contact_friend_id") == jsonobject.getInt("chat_user_sender")) {
+                    jsonobject.put("friend_is_sender", true);
+                } else {
+                    jsonobject.put("friend_is_sender", false);
+                }
+
+                jsonobject.remove("contact_friend_id");
+                send("friend " + jsonobject.toString() + "\r\n");
+
             }
+            System.out.println(results.toString());
+//            try ( OutputStreamWriter out = new OutputStreamWriter(
+//                    outputStream, StandardCharsets.UTF_8)) {
+//                out.write("friend" + results.toString());
+//            }
+
             System.out.println(friendList.toString());
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);

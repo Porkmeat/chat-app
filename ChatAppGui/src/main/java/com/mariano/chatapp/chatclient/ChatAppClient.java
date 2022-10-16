@@ -4,12 +4,14 @@
  */
 package com.mariano.chatapp.chatclient;
 
+import com.mariano.chatapp.chatappgui.Friend;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 
 /**
  *
@@ -148,6 +150,9 @@ public class ChatAppClient {
                     } else if ("msg".equalsIgnoreCase(cmd)) {
                         String[] tokensMsg = StringUtils.split(line, null, 3);
                         handleMessage(tokensMsg);
+                    } else if ("friend".equalsIgnoreCase(cmd)) {
+                        String[] tokensMsg = StringUtils.split(line, null, 2);
+                        handleFriend(tokensMsg[1]);
                     } else {
                         System.out.println("command unknown");
                     }
@@ -243,5 +248,12 @@ public class ChatAppClient {
             default:
                 break;
         }
+    }
+
+    private void handleFriend(String string) {
+        JSONObject jsonobject = new JSONObject(string);
+        System.out.println(jsonobject.toString());
+        Friend friend = new Friend(jsonobject.getString("user_login"), jsonobject.getString("contact_alias"), 
+                jsonobject.getBoolean("friend_is_sender"), jsonobject.getInt("unseen_chats"), jsonobject.getString("last_message"), jsonobject.getString("last_message_time"));
     }
 }
