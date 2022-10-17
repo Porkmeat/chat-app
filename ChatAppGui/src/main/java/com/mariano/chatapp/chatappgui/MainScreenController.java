@@ -62,36 +62,46 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         mainusername.setText(username);
         this.client = client;
         this.client.addStatusListener(this);
-        this.client.requestOnlineUsers();
         this.client.addMessageListener(this);
         this.client.addRequestListener(this);
         this.client.addFriendListener(this);
         this.client.fetchRequests();
         this.client.fetchFriends();
+//        this.client.requestOnlineUsers();
         userlist.setCellFactory(new Callback<ListView<Friend>, ListCell<Friend>>() {
             @Override
             public ListCell<Friend> call(ListView<Friend> userlist) {
                 return new CustomListCell();
             }
         });
-        
+
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
             @Override
             public void changed(ObservableValue<? extends Friend> ov, Friend t, Friend t1) {
-                currentChat = userlist.getSelectionModel().getSelectedItem().getUsername();
-                if (mainchatusername.getText() != null && !mainchatusername.getText().equals(currentChat)) {
+                if (t1 != null) {
+                    currentChat = userlist.getSelectionModel().getSelectedItem().getUsername();
+                    if (!activeChats.containsKey(currentChat)) {
+                        activeChats.put(currentChat, new ListView<String>());
+                        try {
+                            client.fetchMessages(currentChat);
+                        } catch (IOException ex) {
+                            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    if (mainchatusername.getText() != null && !mainchatusername.getText().equals(currentChat)) {
 
-                    Platform.runLater(() -> {
-                        activeChat = activeChats.get(currentChat);
-                        chatwindow.setContent(activeChat);
-                        autoScroll();
-                        mainchatusername.setText(currentChat);
-
-                    });
-                    if (!chatscreen.isVisible()) {
                         Platform.runLater(() -> {
-                            chatscreen.setVisible(true);
+                            activeChat = activeChats.get(currentChat);
+                            chatwindow.setContent(activeChat);
+                            autoScroll();
+                            mainchatusername.setText(currentChat);
+
                         });
+                        if (!chatscreen.isVisible()) {
+                            Platform.runLater(() -> {
+                                chatscreen.setVisible(true);
+                            });
+                        }
                     }
                 }
             }
@@ -152,6 +162,11 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             Platform.runLater(() -> {
                 activeChat.getItems().add("You: " + message);
                 autoScroll();
+                Friend friend = userlist.getSelectionModel().getSelectedItem();
+                userlist.getItems().remove(friend);
+                friend.setLastMsg(message);
+                userlist.getItems().add(0, friend);
+                userlist.getSelectionModel().clearAndSelect(0);
             });
             client.msg(currentChat, message);
             Platform.runLater(() -> {
@@ -163,6 +178,19 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @Override
     public void messageGet(String fromUser, String message) {
         ListView<String> chatWithUser = activeChats.get(fromUser);
+        for (Friend friend : userlist.getItems()) {
+            if (friend.getUsername().equals(fromUser)) {
+                Platform.runLater(() -> {
+                    boolean isSelected = userlist.getSelectionModel().getSelectedItem().equals(friend);
+                    userlist.getItems().remove(friend);
+                    friend.setLastMsg(message);
+                    userlist.getItems().add(0, friend);
+                    if (isSelected) {
+                        userlist.getSelectionModel().clearAndSelect(0);
+                    }
+                });
+            }
+        }
         Platform.runLater(() -> {
             chatWithUser.getItems().add(fromUser + ": " + message);
             if (activeChat == chatWithUser) {
@@ -258,11 +286,16 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @Override
     public void addChat(Friend friend) {
-        if (!activeChats.containsKey(friend.getUsername())) {
-            activeChats.put(friend.getUsername(), new ListView<String>());
-        }
         Platform.runLater(() -> {
             userlist.getItems().add(friend);
+        });
+    }
+
+    @Override
+    public void loadMessages(String friendLogin, String message) {
+        ListView<String> chatWithUser = activeChats.get(friendLogin);
+        Platform.runLater(() -> {
+            chatWithUser.getItems().add(message);
         });
     }
 

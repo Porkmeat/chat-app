@@ -85,6 +85,8 @@ public class ServerWorker extends Thread {
                     fetchFriendList();
                 } else if ("getrequests".equalsIgnoreCase(cmd)) {
                     getFriendRequests();
+                } else if ("loadmessages".equalsIgnoreCase(cmd)) {
+                    fetchMessages(tokens);
                 } else if ("newuser".equalsIgnoreCase(cmd)) {
                     createUser(outputStream, tokens);
                 } else if ("addfriend".equalsIgnoreCase(cmd)) {
@@ -168,15 +170,31 @@ public class ServerWorker extends Thread {
 
                 jsonobject.remove("contact_friend_id");
                 send("friend " + jsonobject.toString() + "\r\n");
-
             }
+            getOnlineUsers();
             System.out.println(results.toString());
-//            try ( OutputStreamWriter out = new OutputStreamWriter(
-//                    outputStream, StandardCharsets.UTF_8)) {
-//                out.write("friend" + results.toString());
-//            }
-
             System.out.println(friendList.toString());
+        } catch (Exception ex) {
+            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void  fetchMessages(String [] tokens) {
+        String friendLogin = tokens[1];
+        int friendId = friendList.get(friendLogin);
+        try {
+            JSONArray results = database.fetchMessages(userid,friendId);
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject jsonobject = results.getJSONObject(i);
+                if (jsonobject.getInt("message_user_id") == userid) {
+                    jsonobject.put("user_is_sender", true);
+                } else {
+                    jsonobject.put("user_is_sender", false);
+                }
+                jsonobject.remove("message_user_id");
+                send("msgload " + friendLogin + " " + jsonobject.toString() + "\r\n");
+            }
+            
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -186,7 +204,7 @@ public class ServerWorker extends Thread {
         List<ServerWorker> workerList = server.getWorkerList();
         for (ServerWorker worker : workerList) {
             if (!login.equals(worker.getLogin())) {
-                if (worker.getLogin() != null) {
+                if (worker.getLogin() != null && friendList.containsKey(worker.getLogin())) {
                     String msg2 = "online " + worker.getLogin() + "\r\n";
                     send(msg2);
                 }
@@ -225,7 +243,6 @@ public class ServerWorker extends Thread {
                         worker.send(outMsg);
                     }
                 } else if (recipient.equalsIgnoreCase(worker.getLogin())) {
-                    recipientid = worker.getUserid();
                     String outMsg = "msg " + login + " " + message + "\r\n";
                     worker.send(outMsg);
                 }

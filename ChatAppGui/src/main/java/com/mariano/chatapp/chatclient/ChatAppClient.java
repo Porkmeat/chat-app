@@ -159,6 +159,9 @@ public class ChatAppClient {
                     } else if ("msg".equalsIgnoreCase(cmd)) {
                         String[] tokensMsg = StringUtils.split(line, null, 3);
                         handleMessage(tokensMsg);
+                    } else if ("msgload".equalsIgnoreCase(cmd)) {
+                        String[] tokensMsg = StringUtils.split(line, null, 3);
+                        handleLoadMessages(tokensMsg);
                     } else if ("friend".equalsIgnoreCase(cmd)) {
                         String[] tokensMsg = StringUtils.split(line, null, 2);
                         handleFriend(tokensMsg[1]);
@@ -223,6 +226,22 @@ public class ChatAppClient {
             listener.request(username);
         }
     }
+    
+    private void handleLoadMessages(String [] tokens) {
+        String friendLogin = tokens[1];
+        JSONObject jsonobject = new JSONObject(tokens[2]);
+        System.out.println(jsonobject.toString());
+        String msg = jsonobject.getString("message_text");
+        if (jsonobject.getBoolean("user_is_sender")) {
+            msg = "You: " + msg;
+        } else {
+            msg = friendLogin + ": " + msg;
+        }
+        
+        for (MessageListener listener : messageListeners) {
+            listener.loadMessages(friendLogin,msg);
+        }
+    }
 
     public void fetchFriends() throws IOException {
         String cmd = "getfriends\r\n";
@@ -269,6 +288,11 @@ public class ChatAppClient {
         for (FriendListener listener : friendListeners) {
             listener.addChat(friend);
         }
+    }
+
+    public void fetchMessages(String friendLogin) throws IOException {
+        String cmd = "loadmessages " + friendLogin +"\r\n";
+        serverOut.write(cmd.getBytes());
     }
 
     

@@ -10,4 +10,5 @@ package com.mariano.chatapp.chatclient;
  */
 public interface MessageListener {
     public void messageGet (String fromUser, String message);
+    public void loadMessages (String friendLogin, String message);
 }

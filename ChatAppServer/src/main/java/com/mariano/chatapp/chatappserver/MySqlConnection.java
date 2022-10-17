@@ -162,6 +162,31 @@ public class MySqlConnection {
         }
     }
     
+    public JSONArray fetchMessages(int userid, int friendId) throws Exception {
+        try {
+            connect();
+            long chatUuid = generateChatUuid(userid,friendId);
+            preparedStatement = connect
+                    .prepareStatement("SELECT message_datetime, message_text, "
+                            + "message_user_id, message_seen FROM message "
+                            + "WHERE chat_uuid = ? ORDER BY message_datetime;");
+            
+            preparedStatement.setLong(1, chatUuid);
+
+            
+            resultSet = preparedStatement.executeQuery();
+            
+            
+            return convertToJSONArray(resultSet);
+            
+            
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+    
     public static JSONArray convertToJSONArray(ResultSet resultSet)
             throws Exception {
         JSONArray jsonArray = new JSONArray();
@@ -233,25 +258,7 @@ public class MySqlConnection {
         }
     }
     
-    public ResultSet fetchMessages(int chatid) throws Exception {
-        try {
-            connect();
-            preparedStatement = connect
-                    .prepareStatement("SELECT salt FROM user WHERE user_login = ?;");
-            preparedStatement.setInt(1, chatid);
-
-            resultSet = preparedStatement.executeQuery();
-            
-            
-            return resultSet;
-            
-            
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
-            close();
-        }
-    }
+    
 
     public ArrayList<String> getRequests(int userid) throws Exception {
         ArrayList<String> requests = new ArrayList<>();
