@@ -4,6 +4,8 @@
  */
 package com.mariano.chatapp.chatappgui;
 
+import java.time.LocalDateTime;
+
 /**
  *
  * @author Mariano
@@ -16,15 +18,17 @@ public class Friend {
     private int unseenChats;
 //    private String profilePicture;
     private String lastMsg;
-    private String timestamp;
+    private LocalDateTime timestamp;
+    private boolean isOnline;
 
-    public Friend(String username, String alias, boolean friendIsSender, int unseenChats, String lastMsg, String timestamp) {
+    public Friend(String username, String alias, boolean friendIsSender, int unseenChats, String lastMsg, LocalDateTime timestamp) {
         this.username = username;
         this.alias = alias;
         this.friendIsSender = friendIsSender;
         this.unseenChats = unseenChats;
         this.lastMsg = lastMsg;
         this.timestamp = timestamp;
+        this.isOnline = false;
     }
 
     public String getUsername() {
@@ -67,12 +71,20 @@ public class Friend {
         this.lastMsg = lastMsg;
     }
 
-    public String getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public boolean isIsOnline() {
+        return isOnline;
+    }
+
+    public void setIsOnline(boolean isOnline) {
+        this.isOnline = isOnline;
     }
     
     

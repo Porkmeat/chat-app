@@ -4,9 +4,13 @@
  */
 package com.mariano.chatapp.chatclient;
 
+import com.mariano.chatapp.chatappgui.Chat;
 import com.mariano.chatapp.chatappgui.Friend;
 import java.io.*;
 import java.net.Socket;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -210,8 +214,10 @@ public class ChatAppClient {
     private void handleMessage(String[] tokensMsg) {
         String fromUser = tokensMsg[1];
         String message = tokensMsg[2];
+        LocalDateTime timestamp = LocalDateTime.now();
+        Chat newMessage = new Chat (message, false, timestamp);
         for (MessageListener listener : messageListeners) {
-            listener.messageGet(fromUser, message);
+            listener.messageGet(fromUser, newMessage);
         }
     }
 
@@ -231,15 +237,17 @@ public class ChatAppClient {
         String friendLogin = tokens[1];
         JSONObject jsonobject = new JSONObject(tokens[2]);
         System.out.println(jsonobject.toString());
-        String msg = jsonobject.getString("message_text");
-        if (jsonobject.getBoolean("user_is_sender")) {
-            msg = "You: " + msg;
-        } else {
-            msg = friendLogin + ": " + msg;
-        }
         
+        
+        Instant timestampUTC = Instant.parse(jsonobject.getString("message_datetime")+"Z");
+        LocalDateTime localTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
+        
+        String msg = jsonobject.getString("message_text");
+        boolean userIsSender = jsonobject.getBoolean("user_is_sender");
+        
+        Chat newMessage = new Chat(msg,userIsSender,localTime);
         for (MessageListener listener : messageListeners) {
-            listener.loadMessages(friendLogin,msg);
+            listener.loadMessages(friendLogin, newMessage);
         }
     }
 
@@ -281,9 +289,13 @@ public class ChatAppClient {
     private void handleFriend(String string) {
         JSONObject jsonobject = new JSONObject(string);
         System.out.println(jsonobject.toString());
+        
+        Instant timestampUTC = Instant.parse(jsonobject.getString("last_message_time")+"Z");
+        LocalDateTime localTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
+        
         Friend friend = new Friend(jsonobject.getString("user_login"), jsonobject.getString("contact_alias"),
                 jsonobject.getBoolean("friend_is_sender"), jsonobject.getInt("unseen_chats"),
-                jsonobject.getString("last_message"), "time");
+                jsonobject.getString("last_message"), localTime);
         //jsonobject.getString("last_message_time")
         for (FriendListener listener : friendListeners) {
             listener.addChat(friend);

@@ -4,43 +4,43 @@
  */
 package com.mariano.chatapp.chatappgui;
 
+/**
+ *
+ * @author julia
+ */
 import java.time.LocalDateTime;
+import javafx.geometry.Pos;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import org.apache.commons.lang3.time.DateUtils;
 
 /**
  *
  * @author Mariano
  */
-public class CustomListCell extends ListCell<Friend> {
+public class ChatListCell extends ListCell<Chat> {
         private HBox content;
-        private Text profilePicture;
-        private Text username;
-        private Text lastMsg;
+        private Text message;
         private Text timestamp;
-        private VBox textContainer;
-        private HBox subtextContainer;
+        private VBox bubble;
 
-        public CustomListCell() {
+        public ChatListCell() {
             super();
-            username = new Text();
-            lastMsg = new Text();
+            message = new Text();
             timestamp = new Text();
-            profilePicture = new Text();
-            subtextContainer = new HBox(lastMsg,timestamp);
-            textContainer = new VBox(username, subtextContainer);
-            content = new HBox(profilePicture, textContainer);
+            bubble = new VBox(message, timestamp);
+            content = new HBox(bubble);
+            bubble.setSpacing(5);
             content.setSpacing(10);
         }
 
         @Override
-        protected void updateItem(Friend item, boolean empty) {
+        protected void updateItem(Chat item, boolean empty) {
             super.updateItem(item, empty);
             if (item != null && !empty) { // <== test for null item and empty parameter
-                username.setText(item.getUsername());
-                lastMsg.setText(item.getLastMsg());
+                message.setText(item.getMessage());
                 LocalDateTime messageTime = item.getTimestamp();
                 LocalDateTime now = LocalDateTime.now();
                 if (now.toLocalDate().equals(messageTime.toLocalDate())) {
@@ -48,6 +48,13 @@ public class CustomListCell extends ListCell<Friend> {
                 } else {
                     timestamp.setText(messageTime.getDayOfMonth()+"/"+messageTime.getMonthValue()+
                             " - "+ messageTime.getHour()+":"+messageTime.getMinute());
+                }
+                if(item.isUserIsSender()) {
+                    content.setAlignment(Pos.CENTER_RIGHT);
+                    bubble.setStyle("-fx-background-color: #80deea;");
+                } else {
+                    content.setAlignment(Pos.CENTER_LEFT);
+                    bubble.setStyle("-fx-background-color: #a5d6a7;");
                 }
                 setGraphic(content);
             } else {

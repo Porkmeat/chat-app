@@ -6,6 +6,7 @@ import com.mariano.chatapp.chatclient.MessageListener;
 import com.mariano.chatapp.chatclient.RequestListener;
 import com.mariano.chatapp.chatclient.StatusListener;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +17,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
@@ -25,14 +25,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
 
     private ChatAppClient client;
     private String currentChat;
     private final HashMap<String, ListView> activeChats = new HashMap<>();
-    private ListView<String> activeChat;
+    private ListView<Chat> activeChat;
     private String requester;
 
     @FXML
@@ -68,12 +67,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.fetchRequests();
         this.client.fetchFriends();
 //        this.client.requestOnlineUsers();
-        userlist.setCellFactory(new Callback<ListView<Friend>, ListCell<Friend>>() {
-            @Override
-            public ListCell<Friend> call(ListView<Friend> userlist) {
-                return new CustomListCell();
-            }
-        });
+        userlist.setCellFactory((ListView<Friend> userlist1) -> new CustomListCell());
 
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
             @Override
@@ -81,7 +75,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 if (t1 != null) {
                     currentChat = userlist.getSelectionModel().getSelectedItem().getUsername();
                     if (!activeChats.containsKey(currentChat)) {
-                        activeChats.put(currentChat, new ListView<String>());
+                        ListView<Chat> newChat = new ListView<>();
+                        newChat.setCellFactory((ListView<Chat> newChat1) -> new ChatListCell());
+                        activeChats.put(currentChat, newChat);
+                        
                         try {
                             client.fetchMessages(currentChat);
                         } catch (IOException ex) {
@@ -159,8 +156,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     public void sendMsg() throws IOException {
         if (chatinput.getText() != null && !chatinput.getText().isBlank()) {
             String message = chatinput.getText();
+            LocalDateTime timestamp = LocalDateTime.now();
+            Chat newMessage = new Chat(message,true,timestamp);
             Platform.runLater(() -> {
-                activeChat.getItems().add("You: " + message);
+                activeChat.getItems().add(newMessage);
                 autoScroll();
                 Friend friend = userlist.getSelectionModel().getSelectedItem();
                 userlist.getItems().remove(friend);
@@ -176,14 +175,14 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @Override
-    public void messageGet(String fromUser, String message) {
-        ListView<String> chatWithUser = activeChats.get(fromUser);
+    public void messageGet(String fromUser, Chat message) {
+
         for (Friend friend : userlist.getItems()) {
             if (friend.getUsername().equals(fromUser)) {
                 Platform.runLater(() -> {
                     boolean isSelected = userlist.getSelectionModel().getSelectedItem().equals(friend);
                     userlist.getItems().remove(friend);
-                    friend.setLastMsg(message);
+                    friend.setLastMsg(message.getMessage());
                     userlist.getItems().add(0, friend);
                     if (isSelected) {
                         userlist.getSelectionModel().clearAndSelect(0);
@@ -191,12 +190,15 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 });
             }
         }
-        Platform.runLater(() -> {
-            chatWithUser.getItems().add(fromUser + ": " + message);
-            if (activeChat == chatWithUser) {
-                autoScroll();
-            }
-        });
+        if (activeChats.containsKey(fromUser)) {
+            ListView<Chat> chatWithUser = activeChats.get(fromUser);
+            Platform.runLater(() -> {
+                chatWithUser.getItems().add(message);
+                if (activeChat == chatWithUser) {
+                    autoScroll();
+                }
+            });
+        }
     }
 
     @FXML
@@ -292,8 +294,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @Override
-    public void loadMessages(String friendLogin, String message) {
-        ListView<String> chatWithUser = activeChats.get(friendLogin);
+    public void loadMessages(String fromUser, Chat message) {
+        ListView<Chat> chatWithUser = activeChats.get(fromUser);
         Platform.runLater(() -> {
             chatWithUser.getItems().add(message);
         });

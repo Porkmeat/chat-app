@@ -4,11 +4,13 @@
  */
 package com.mariano.chatapp.chatclient;
 
+import com.mariano.chatapp.chatappgui.Chat;
+
 /**
  *
  * @author Mariano
  */
 public interface MessageListener {
-    public void messageGet (String fromUser, String message);
-    public void loadMessages (String friendLogin, String message);
+    public void messageGet (String fromUser, Chat message);
+    public void loadMessages (String fromUser, Chat message);
 }

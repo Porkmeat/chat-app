@@ -143,7 +143,8 @@ public class MySqlConnection {
             preparedStatement = connect
                     .prepareStatement("SELECT  u.user_login, uc.contact_friend_id, uc.contact_alias,"
                             + "uc.contact_status, chat_uuid, c.chat_user_sender,"
-                            + "c.last_message, c.last_message_time, c.last_message_seen,"
+                            + "c.last_message, DATE_FORMAT(c.last_message_time,'%Y-%m-%dT%H:%i:%s') "
+                            + "AS last_message_time, c.last_message_seen,"
                             + "c.unseen_chats FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
                             + "INNER JOIN user u ON u.user_id = uc.contact_friend_id "
                             + "WHERE uc.contact_user_id = ? AND uc.contact_status = 3;");
@@ -167,7 +168,8 @@ public class MySqlConnection {
             connect();
             long chatUuid = generateChatUuid(userid,friendId);
             preparedStatement = connect
-                    .prepareStatement("SELECT message_datetime, message_text, "
+                    .prepareStatement("SELECT DATE_FORMAT(message_datetime,'%Y-%m-%dT%H:%i:%s') "
+                            + "AS message_datetime, message_text, "
                             + "message_user_id, message_seen FROM message "
                             + "WHERE chat_uuid = ? ORDER BY message_datetime;");
             
@@ -237,7 +239,7 @@ public class MySqlConnection {
             
             preparedStatement = connect
                     .prepareStatement("INSERT INTO message (message_datetime,message_text,chat_uuid,message_user_id,message_seen) "
-                            + "VALUES (NOW(),?,"+chatUuid+",?,0);");
+                            + "VALUES (UTC_TIMESTAMP(),?,"+chatUuid+",?,0);");
             
             preparedStatement.setString(1, message);
             preparedStatement.setInt(2, userid);
@@ -245,7 +247,7 @@ public class MySqlConnection {
             preparedStatement.executeUpdate();
             
             preparedStatement = connect
-                    .prepareStatement("UPDATE chat SET chat_user_sender = ?, last_message = ?, last_message_time = NOW(), last_message_seen = 0 WHERE chat_uuid = "+chatUuid+";");
+                    .prepareStatement("UPDATE chat SET chat_user_sender = ?, last_message = ?, last_message_time = UTC_TIMESTAMP(), last_message_seen = 0 WHERE chat_uuid = "+chatUuid+";");
             
             preparedStatement.setInt(1, userid);
             preparedStatement.setString(2, message);
@@ -291,7 +293,7 @@ public class MySqlConnection {
             preparedStatement.executeUpdate();
             
             preparedStatement = connect
-                    .prepareStatement("INSERT INTO chat (chat_user_sender, last_message, last_message_time, chat_uuid) VALUES (?,?,NOW(),"+chatUuid+");");
+                    .prepareStatement("INSERT INTO chat (chat_user_sender, last_message, last_message_time, chat_uuid) VALUES (?,?,UTC_TIMESTAMP(),"+chatUuid+");");
             
             preparedStatement.setInt(1,requesterId);
             preparedStatement.setString(2,"");
