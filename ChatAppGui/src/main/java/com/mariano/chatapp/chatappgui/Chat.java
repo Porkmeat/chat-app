@@ -21,6 +21,12 @@ public class Chat {
         this.userIsSender = userIsSender;
         this.timestamp = timestamp;
     }
+    
+    public Chat(LocalDateTime timestamp) {
+        this.message = "";
+        this.userIsSender = true;
+        this.timestamp = timestamp;
+    }
 
     public String getMessage() {
         return message;

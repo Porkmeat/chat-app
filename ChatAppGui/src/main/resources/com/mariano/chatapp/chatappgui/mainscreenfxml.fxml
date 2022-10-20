@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -113,11 +114,15 @@
                   </AnchorPane>
                </top>
                <bottom>
-                  <AnchorPane prefHeight="114.0" prefWidth="559.0" BorderPane.alignment="CENTER">
+                  <AnchorPane maxHeight="150.0" prefWidth="559.0" BorderPane.alignment="CENTER">
                      <children>
                         <Separator layoutX="115.0" layoutY="35.0" prefWidth="200.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="-1.0" />
-                        <TextField fx:id="chatinput" layoutX="87.0" layoutY="12.0" prefHeight="87.0" prefWidth="417.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="55.0" AnchorPane.topAnchor="15.0" />
-                        <Button fx:id="sendbutton" contentDisplay="GRAPHIC_ONLY" defaultButton="true" layoutX="519.0" layoutY="45.0" mnemonicParsing="false" onAction="#sendMsg" prefHeight="25.0" prefWidth="26.0" AnchorPane.rightAnchor="15.0" />
+                        <TextArea fx:id="chatinput" layoutX="115.0" maxHeight="100.0" prefHeight="45.0" promptText="Write a message" wrapText="true" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="55.0" AnchorPane.topAnchor="15.0">
+                           <padding>
+                              <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                           </padding>
+                        </TextArea>
+                        <Button fx:id="sendbutton" contentDisplay="GRAPHIC_ONLY" defaultButton="true" layoutX="519.0" layoutY="26.0" mnemonicParsing="false" onAction="#sendMsg" prefHeight="25.0" prefWidth="26.0" AnchorPane.rightAnchor="15.0" />
                      </children>
                   </AnchorPane>
                </bottom>

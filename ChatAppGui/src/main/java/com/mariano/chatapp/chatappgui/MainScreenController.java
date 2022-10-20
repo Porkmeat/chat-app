@@ -13,7 +13,10 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -21,7 +24,10 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -45,7 +51,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @FXML
     private BorderPane chatscreen;
     @FXML
-    private TextField chatinput;
+    private TextArea chatinput;
     @FXML
     private ScrollPane chatwindow;
     @FXML
@@ -78,7 +84,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                         ListView<Chat> newChat = new ListView<>();
                         newChat.setCellFactory((ListView<Chat> newChat1) -> new ChatListCell());
                         activeChats.put(currentChat, newChat);
-                        
+
                         try {
                             client.fetchMessages(currentChat);
                         } catch (IOException ex) {
@@ -114,6 +120,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 }
             }
         });
+        
+        chatinput.addEventFilter(KeyEvent.KEY_PRESSED, new EnterKeyHandler());
     }
 
     public void logoff(Stage stage) {
@@ -155,15 +163,31 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @FXML
     public void sendMsg() throws IOException {
         if (chatinput.getText() != null && !chatinput.getText().isBlank()) {
-            String message = chatinput.getText();
-            LocalDateTime timestamp = LocalDateTime.now();
-            Chat newMessage = new Chat(message,true,timestamp);
+            String message = chatinput.getText().trim();
+            LocalDateTime now = LocalDateTime.now();
+            int activeChatSize = activeChat.getItems().size();
+
+            if (activeChatSize == 0) {
+                Platform.runLater(() -> {
+                    activeChat.getItems().add(new Chat(now));
+                });
+            } else {
+                LocalDateTime lastMsgDate = activeChat.getItems().get(activeChatSize - 1).getTimestamp();
+                if (!now.toLocalDate().equals(lastMsgDate.toLocalDate())) {
+                    Platform.runLater(() -> {
+                        activeChat.getItems().add(new Chat(now));
+                    });
+                }
+            }
+
+            Chat newMessage = new Chat(message, true, now);
             Platform.runLater(() -> {
                 activeChat.getItems().add(newMessage);
                 autoScroll();
                 Friend friend = userlist.getSelectionModel().getSelectedItem();
                 userlist.getItems().remove(friend);
                 friend.setLastMsg(message);
+                friend.setTimestamp(now);
                 userlist.getItems().add(0, friend);
                 userlist.getSelectionModel().clearAndSelect(0);
             });
@@ -183,6 +207,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                     boolean isSelected = userlist.getSelectionModel().getSelectedItem().equals(friend);
                     userlist.getItems().remove(friend);
                     friend.setLastMsg(message.getMessage());
+                    friend.setTimestamp(message.getTimestamp());
                     userlist.getItems().add(0, friend);
                     if (isSelected) {
                         userlist.getSelectionModel().clearAndSelect(0);
@@ -192,6 +217,19 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         }
         if (activeChats.containsKey(fromUser)) {
             ListView<Chat> chatWithUser = activeChats.get(fromUser);
+            int chatWithUserSize = chatWithUser.getItems().size();
+            if (chatWithUserSize == 0) {
+                Platform.runLater(() -> {
+                    chatWithUser.getItems().add(new Chat(message.getTimestamp()));
+                });
+            } else {
+                LocalDateTime lastMsgDate = chatWithUser.getItems().get(chatWithUserSize - 1).getTimestamp();
+                if (!message.getTimestamp().toLocalDate().equals(lastMsgDate.toLocalDate())) {
+                    Platform.runLater(() -> {
+                        chatWithUser.getItems().add(new Chat(message.getTimestamp()));
+                    });
+                }
+            }
             Platform.runLater(() -> {
                 chatWithUser.getItems().add(message);
                 if (activeChat == chatWithUser) {
@@ -212,7 +250,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     private void autoScroll() {
         if (activeChat != null) {
-            activeChat.scrollTo(activeChat.getItems().size());
+            activeChat.scrollTo(activeChat.getItems().size()-1);
         }
     }
 
@@ -296,9 +334,50 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @Override
     public void loadMessages(String fromUser, Chat message) {
         ListView<Chat> chatWithUser = activeChats.get(fromUser);
+        LocalDateTime messageTime = message.getTimestamp();
+        int chatWithUserSize = chatWithUser.getItems().size();
+            if (chatWithUserSize == 0) {
+                Platform.runLater(() -> {
+                    chatWithUser.getItems().add(new Chat(messageTime));
+                });
+            } else {
+                LocalDateTime lastMsgDate = chatWithUser.getItems().get(chatWithUserSize - 1).getTimestamp();
+                if (!messageTime.toLocalDate().equals(lastMsgDate.toLocalDate())) {
+                    Platform.runLater(() -> {
+                        chatWithUser.getItems().add(new Chat(messageTime));
+                    });
+                }
+            }
         Platform.runLater(() -> {
             chatWithUser.getItems().add(message);
         });
     }
+    
+    private class EnterKeyHandler implements EventHandler<KeyEvent> {
+
+    private KeyEvent keypress;
+
+    @Override
+    public void handle(KeyEvent event) {
+        if (keypress != null) {
+            keypress = null;
+            return;
+        }
+
+        Parent parent = chatinput.getParent();
+        if (parent != null) {
+            if (event.getCode() == KeyCode.ENTER) {
+//                if (event.isControlDown()) {
+//                    keypress = recodeWithoutControlDown(event);
+//                    myTextArea.fireEvent(keypress);
+//                } else {
+                    Event parentEvent = event.copyFor(parent, parent);
+                    parent.fireEvent(parentEvent);
+                }
+                event.consume();
+            }
+        }
+    }
+
 
 }
