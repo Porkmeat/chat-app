@@ -5,6 +5,10 @@
 package com.mariano.chatapp.chatappgui;
 
 import java.time.LocalDateTime;
+import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.util.Callback;
 
 /**
  *
@@ -19,7 +23,7 @@ public class Friend {
 //    private String profilePicture;
     private String lastMsg;
     private LocalDateTime timestamp;
-    private boolean isOnline;
+    public final BooleanProperty isOnline = new SimpleBooleanProperty();
 
     public Friend(String username, String alias, boolean friendIsSender, int unseenChats, String lastMsg, LocalDateTime timestamp) {
         this.username = username;
@@ -28,7 +32,12 @@ public class Friend {
         this.unseenChats = unseenChats;
         this.lastMsg = lastMsg;
         this.timestamp = timestamp;
-        this.isOnline = false;
+        this.isOnline.set(false);
+
+    }
+    
+    public static Callback<Friend, Observable[]> extractor() {
+        return (Friend param) -> new Observable[]{param.isOnline};
     }
 
     public String getUsername() {
@@ -80,11 +89,11 @@ public class Friend {
     }
 
     public boolean isIsOnline() {
-        return isOnline;
+        return this.isOnline.get();
     }
 
     public void setIsOnline(boolean isOnline) {
-        this.isOnline = isOnline;
+        this.isOnline.set(isOnline);
     }
     
     

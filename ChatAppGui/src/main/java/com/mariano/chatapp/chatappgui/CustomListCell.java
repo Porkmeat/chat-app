@@ -12,9 +12,7 @@ import java.time.temporal.ChronoUnit;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
+
 
 /**
  *
@@ -22,26 +20,12 @@ import javafx.scene.text.Text;
  */
 public class CustomListCell extends ListCell<Friend> {
 
-//    private HBox content;
-//    private Text profilePicture;
-//    private Text username;
-//    private Text lastMsg;
-//    private Text timestamp;
-//    private VBox textContainer;
-//    private HBox subtextContainer;
+
     private AnchorPane content;
     private FriendsfxmlController controller;
 
     public CustomListCell() {
         super();
-//        username = new Text();
-//        lastMsg = new Text();
-//        timestamp = new Text();
-//        profilePicture = new Text();
-//        subtextContainer = new HBox(lastMsg, timestamp);
-//        textContainer = new VBox(username, subtextContainer);
-//        content = new HBox(profilePicture, textContainer);
-//        content.setSpacing(10);
         {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(Appgui.class.getResource("friendsfxml.fxml"));
@@ -59,16 +43,16 @@ public class CustomListCell extends ListCell<Friend> {
     protected void updateItem(Friend item, boolean empty) {
         super.updateItem(item, empty);
         if (item != null && !empty) { // <== test for null item and empty parameter
-//                username.setText(item.getUsername());
-//                lastMsg.setText(item.getLastMsg());
+            
             controller.setUsername(item.getAlias());
             controller.setLastMessage(item.getLastMsg());
             LocalDateTime messageTime = item.getTimestamp();
             LocalDateTime now = LocalDateTime.now();
             controller.setTimestamp(setTimeString(now, messageTime));
-//                timestamp.setText(setTimeString(now, messageTime));
+            controller.setOnlineStatus(item.isIsOnline());
             content = controller.getFriendcard();
             setGraphic(content);
+            
         } else {
             setGraphic(null);
         }

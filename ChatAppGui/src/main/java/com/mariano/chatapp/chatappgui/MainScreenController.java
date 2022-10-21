@@ -17,6 +17,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -82,10 +83,14 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.addMessageListener(this);
         this.client.addRequestListener(this);
         this.client.addFriendListener(this);
+        
+        ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
+        userlist.setCellFactory((ListView<Friend> userlist1) -> new CustomListCell());
+        userlist.setItems(friends);
+        
         this.client.fetchRequests();
         this.client.fetchFriends();
-//        this.client.requestOnlineUsers();
-        userlist.setCellFactory((ListView<Friend> userlist1) -> new CustomListCell());
+        
 
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
             @Override
@@ -157,19 +162,22 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @Override
     public void online(String username) {
-//        if (!activeChats.containsKey(username)) {
-//            activeChats.put(username, new ListView<String>());
-//        }
-//        Platform.runLater(() -> {
-//            userlist.getItems().add(username);
-//        });
+
+        for (Friend friend : userlist.getItems()) {
+            if (friend.getUsername().equals(username)) {
+                friend.setIsOnline(true);
+            }
+        }
     }
 
     @Override
     public void offline(String username) {
-//        Platform.runLater(() -> {
-//            userlist.getItems().remove(username);
-//        });
+        
+        for (Friend friend : userlist.getItems()) {
+            if (friend.getUsername().equals(username)) {
+                friend.setIsOnline(false);
+            }
+        }
     }
 
     @FXML

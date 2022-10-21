@@ -6,11 +6,14 @@ package com.mariano.chatapp.chatappgui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Effect;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
-
 
 /**
  * FXML Controller class
@@ -46,14 +49,22 @@ public class FriendsfxmlController {
     
     public void setLastMessage(String lastMessage) {
         lastmessagelabel.setText(lastMessage);
-    } 
+    }    
     
     public void setTimestamp(String timestamp) {
         timestamplabel.setText(timestamp);
     }
-
+    
+    public void setOnlineStatus(boolean isOnline) {
+        if (isOnline) {
+            profilepicture.setEffect(new DropShadow(BlurType.GAUSSIAN, Color.GREEN, 10, 0, 0, 0));
+        } else {
+            profilepicture.setEffect(null);
+        }
+    }
+    
     public AnchorPane getFriendcard() {
         return friendcard;
     }    
-
+    
 }
