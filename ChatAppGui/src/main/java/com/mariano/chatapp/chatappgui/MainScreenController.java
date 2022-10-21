@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -121,7 +122,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             }
         });
         
-        chatinput.addEventFilter(KeyEvent.KEY_PRESSED, new EnterKeyHandler());
+       chatinput.addEventFilter(KeyEvent.KEY_PRESSED, new EnterKeyHandler());
     }
 
     public void logoff(Stage stage) {
@@ -166,19 +167,13 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             String message = chatinput.getText().trim();
             LocalDateTime now = LocalDateTime.now();
             int activeChatSize = activeChat.getItems().size();
+            LocalDateTime lastMsgDate = activeChat.getItems().get(activeChatSize - 1).getTimestamp();
 
-            if (activeChatSize == 0) {
+            if (activeChatSize == 0 || !now.toLocalDate().equals(lastMsgDate.toLocalDate())) {
                 Platform.runLater(() -> {
                     activeChat.getItems().add(new Chat(now));
                 });
-            } else {
-                LocalDateTime lastMsgDate = activeChat.getItems().get(activeChatSize - 1).getTimestamp();
-                if (!now.toLocalDate().equals(lastMsgDate.toLocalDate())) {
-                    Platform.runLater(() -> {
-                        activeChat.getItems().add(new Chat(now));
-                    });
-                }
-            }
+            } 
 
             Chat newMessage = new Chat(message, true, now);
             Platform.runLater(() -> {
@@ -332,24 +327,12 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @Override
-    public void loadMessages(String fromUser, Chat message) {
+    public void loadMessages(String fromUser, ObservableList messages) {
         ListView<Chat> chatWithUser = activeChats.get(fromUser);
-        LocalDateTime messageTime = message.getTimestamp();
-        int chatWithUserSize = chatWithUser.getItems().size();
-            if (chatWithUserSize == 0) {
-                Platform.runLater(() -> {
-                    chatWithUser.getItems().add(new Chat(messageTime));
-                });
-            } else {
-                LocalDateTime lastMsgDate = chatWithUser.getItems().get(chatWithUserSize - 1).getTimestamp();
-                if (!messageTime.toLocalDate().equals(lastMsgDate.toLocalDate())) {
-                    Platform.runLater(() -> {
-                        chatWithUser.getItems().add(new Chat(messageTime));
-                    });
-                }
-            }
+        
         Platform.runLater(() -> {
-            chatWithUser.getItems().add(message);
+            chatWithUser.setItems(messages);
+            autoScroll();
         });
     }
     
@@ -367,14 +350,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         Parent parent = chatinput.getParent();
         if (parent != null) {
             if (event.getCode() == KeyCode.ENTER) {
-//                if (event.isControlDown()) {
-//                    keypress = recodeWithoutControlDown(event);
-//                    myTextArea.fireEvent(keypress);
-//                } else {
                     Event parentEvent = event.copyFor(parent, parent);
                     parent.fireEvent(parentEvent);
+                    event.consume();
                 }
-                event.consume();
             }
         }
     }

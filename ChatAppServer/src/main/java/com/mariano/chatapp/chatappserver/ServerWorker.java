@@ -192,9 +192,8 @@ public class ServerWorker extends Thread {
                     jsonobject.put("user_is_sender", false);
                 }
                 jsonobject.remove("message_user_id");
-                send("msgload " + friendLogin + " " + jsonobject.toString() + "\r\n");
             }
-            
+            send("msgload " + friendLogin + " " + results.toString() + "\r\n");
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }

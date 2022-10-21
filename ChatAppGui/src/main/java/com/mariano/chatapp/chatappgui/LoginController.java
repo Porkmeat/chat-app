@@ -100,6 +100,9 @@ public class LoginController {
         scene.getStylesheets().add(getClass().getResource("fxml.css").toExternalForm());
 
         stage.setScene(scene);
+        
+        stage.setMinHeight(600);
+        stage.setMinWidth(900);
         stage.show();
     }
 }

@@ -5,6 +5,7 @@
 package com.mariano.chatapp.chatclient;
 
 import com.mariano.chatapp.chatappgui.Chat;
+import javafx.collections.ObservableList;
 
 /**
  *
@@ -12,5 +13,5 @@ import com.mariano.chatapp.chatappgui.Chat;
  */
 public interface MessageListener {
     public void messageGet (String fromUser, Chat message);
-    public void loadMessages (String fromUser, Chat message);
+    public void loadMessages (String fromUser, ObservableList messages);
 }

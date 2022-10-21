@@ -26,6 +26,7 @@ public class Appgui extends Application {
 
         stage.setTitle("MacChat");
         stage.setScene(scene);
+
         stage.show();
     }
 

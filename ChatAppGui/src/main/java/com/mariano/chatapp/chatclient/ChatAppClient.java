@@ -14,7 +14,11 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -43,22 +47,6 @@ public class ChatAppClient {
 
         ChatAppClient client = new ChatAppClient("localhost", 8818);
 
-//        client.addStatusListener(new StatusListener() {
-//            @Override
-//            public void online(String username) {
-//                System.out.println("ONLINE: " + username);
-//            }
-//
-//            @Override
-//            public void offline(String username) {
-//                System.out.println("OFFLINE: " + username);
-//            }
-//        });
-//
-//        // functional interface Lambda
-//        client.addMessageListener((String fromUser, String message) -> {
-//            System.out.println("You got a message from " + fromUser + ": " + message);
-//        });
         // try to connect
         if (!client.connect()) {
             System.err.println("Connection failed!");
@@ -138,7 +126,7 @@ public class ChatAppClient {
     public void removeMessageListener(MessageListener listener) {
         messageListeners.remove(listener);
     }
-    
+
     public void addFriendListener(FriendListener listener) {
         friendListeners.add(listener);
     }
@@ -215,7 +203,7 @@ public class ChatAppClient {
         String fromUser = tokensMsg[1];
         String message = tokensMsg[2];
         LocalDateTime timestamp = LocalDateTime.now();
-        Chat newMessage = new Chat (message, false, timestamp);
+        Chat newMessage = new Chat(message, false, timestamp);
         for (MessageListener listener : messageListeners) {
             listener.messageGet(fromUser, newMessage);
         }
@@ -232,23 +220,34 @@ public class ChatAppClient {
             listener.request(username);
         }
     }
-    
-    private void handleLoadMessages(String [] tokens) {
+
+    private void handleLoadMessages(String[] tokens) {
         String friendLogin = tokens[1];
-        JSONObject jsonobject = new JSONObject(tokens[2]);
-        System.out.println(jsonobject.toString());
-        
-        
-        Instant timestampUTC = Instant.parse(jsonobject.getString("message_datetime")+"Z");
-        LocalDateTime localTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
-        
-        String msg = jsonobject.getString("message_text");
-        boolean userIsSender = jsonobject.getBoolean("user_is_sender");
-        
-        Chat newMessage = new Chat(msg,userIsSender,localTime);
-        for (MessageListener listener : messageListeners) {
-            listener.loadMessages(friendLogin, newMessage);
+        JSONArray messages = new JSONArray(tokens[2]);
+        System.out.println(messages.toString());
+        ObservableList<Chat> chatList = FXCollections.observableArrayList();
+        LocalDateTime lastMessageTime = null;
+
+        for (int i = 0; i < messages.length(); i++) {
+            JSONObject jsonobject = messages.getJSONObject(i);
+            Instant timestampUTC = Instant.parse(jsonobject.getString("message_datetime") + "Z");
+            LocalDateTime messageLocalTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+            if (i == 0 || !messageLocalTime.toLocalDate().equals(lastMessageTime.toLocalDate())) {
+                chatList.add(new Chat(messageLocalTime));
+            }
+
+            lastMessageTime = messageLocalTime;
+            String msg = jsonobject.getString("message_text");
+            boolean userIsSender = jsonobject.getBoolean("user_is_sender");
+            Chat newMessage = new Chat(msg, userIsSender, messageLocalTime);
+
+            chatList.add(newMessage);
         }
+        for (MessageListener listener : messageListeners) {
+            listener.loadMessages(friendLogin, chatList);
+        }
+
     }
 
     public void fetchFriends() throws IOException {
@@ -289,10 +288,10 @@ public class ChatAppClient {
     private void handleFriend(String string) {
         JSONObject jsonobject = new JSONObject(string);
         System.out.println(jsonobject.toString());
-        
-        Instant timestampUTC = Instant.parse(jsonobject.getString("last_message_time")+"Z");
+
+        Instant timestampUTC = Instant.parse(jsonobject.getString("last_message_time") + "Z");
         LocalDateTime localTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
-        
+
         Friend friend = new Friend(jsonobject.getString("user_login"), jsonobject.getString("contact_alias"),
                 jsonobject.getBoolean("friend_is_sender"), jsonobject.getInt("unseen_chats"),
                 jsonobject.getString("last_message"), localTime);
@@ -303,9 +302,8 @@ public class ChatAppClient {
     }
 
     public void fetchMessages(String friendLogin) throws IOException {
-        String cmd = "loadmessages " + friendLogin +"\r\n";
+        String cmd = "loadmessages " + friendLogin + "\r\n";
         serverOut.write(cmd.getBytes());
     }
 
-    
 }

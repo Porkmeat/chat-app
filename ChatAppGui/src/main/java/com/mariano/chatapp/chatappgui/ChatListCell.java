@@ -87,6 +87,8 @@ public class ChatListCell extends ListCell<Chat> {
         long days = ChronoUnit.DAYS.between(messageDate, today);
         if (days == 0) {
             return "TODAY";
+        } else if (days == 1) {
+            return "YESTERDAY";
         } else if (days < 7) {
             return messageDate.getDayOfWeek().toString();
         } else {
