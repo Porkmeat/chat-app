@@ -10,6 +10,7 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -35,9 +36,9 @@
          <children>
             <VBox prefHeight="519.0" prefWidth="195.0">
                <children>
-                  <AnchorPane prefHeight="60.0" prefWidth="208.0">
+                  <AnchorPane fx:id="usercard" prefHeight="60.0" prefWidth="208.0">
                      <children>
-                        <ImageView fx:id="mainuserimg" fitHeight="50.0" fitWidth="50.0" layoutX="7.0" layoutY="5.0" pickOnBounds="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                        <ImageView fx:id="mainuserimg" fitHeight="50.0" fitWidth="50.0" layoutX="7.0" layoutY="5.0" onMouseClicked="#activateUserToggle" pickOnBounds="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                            <image>
                               <Image url="@phantom-of-the-opera-mask-22876.jpg" />
                            </image>
@@ -48,6 +49,7 @@
                            </font>
                         </Label>
                         <Separator layoutX="8.0" layoutY="62.0" prefHeight="0.0" prefWidth="827.0" AnchorPane.bottomAnchor="-3.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" />
+                        <ToggleButton fx:id="usercardtoggle" focusTraversable="false" layoutX="171.0" layoutY="18.0" mnemonicParsing="false" onAction="#openUserCard" visible="false" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                         
                      </children>
                   </AnchorPane>

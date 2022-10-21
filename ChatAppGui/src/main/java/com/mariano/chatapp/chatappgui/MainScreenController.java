@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -27,11 +31,14 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
 
@@ -41,6 +48,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private ListView<Chat> activeChat;
     private String requester;
 
+    @FXML
+    private ToggleButton usercardtoggle;
+    @FXML
+    private AnchorPane usercard;
     @FXML
     private ListView<Friend> userlist;
     @FXML
@@ -121,8 +132,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 }
             }
         });
-        
-       chatinput.addEventFilter(KeyEvent.KEY_PRESSED, new EnterKeyHandler());
+
+        chatinput.addEventFilter(KeyEvent.KEY_PRESSED, new EnterKeyHandler());
     }
 
     public void logoff(Stage stage) {
@@ -162,6 +173,30 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @FXML
+    public void activateUserToggle() {
+        usercardtoggle.fire();
+    }
+
+    @FXML
+    public void openUserCard() {
+        Duration cycleDuration = Duration.millis(500);
+        Timeline timeline;
+        if (usercardtoggle.isSelected()) {
+            timeline = new Timeline(
+                    new KeyFrame(cycleDuration,
+                            new KeyValue(usercard.prefHeightProperty(), 300, Interpolator.EASE_BOTH))
+            );
+        } else {
+            timeline = new Timeline(
+                    new KeyFrame(cycleDuration,
+                            new KeyValue(usercard.prefHeightProperty(), 60, Interpolator.EASE_BOTH))
+            );
+        }
+
+        timeline.play();
+    }
+
+    @FXML
     public void sendMsg() throws IOException {
         if (chatinput.getText() != null && !chatinput.getText().isBlank()) {
             String message = chatinput.getText().trim();
@@ -173,7 +208,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 Platform.runLater(() -> {
                     activeChat.getItems().add(new Chat(now));
                 });
-            } 
+            }
 
             Chat newMessage = new Chat(message, true, now);
             Platform.runLater(() -> {
@@ -245,7 +280,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     private void autoScroll() {
         if (activeChat != null) {
-            activeChat.scrollTo(activeChat.getItems().size()-1);
+            activeChat.scrollTo(activeChat.getItems().size() - 1);
         }
     }
 
@@ -329,27 +364,27 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @Override
     public void loadMessages(String fromUser, ObservableList messages) {
         ListView<Chat> chatWithUser = activeChats.get(fromUser);
-        
+
         Platform.runLater(() -> {
             chatWithUser.setItems(messages);
             autoScroll();
         });
     }
-    
+
     private class EnterKeyHandler implements EventHandler<KeyEvent> {
 
-    private KeyEvent keypress;
+        private KeyEvent keypress;
 
-    @Override
-    public void handle(KeyEvent event) {
-        if (keypress != null) {
-            keypress = null;
-            return;
-        }
+        @Override
+        public void handle(KeyEvent event) {
+            if (keypress != null) {
+                keypress = null;
+                return;
+            }
 
-        Parent parent = chatinput.getParent();
-        if (parent != null) {
-            if (event.getCode() == KeyCode.ENTER) {
+            Parent parent = chatinput.getParent();
+            if (parent != null) {
+                if (event.getCode() == KeyCode.ENTER) {
                     Event parentEvent = event.copyFor(parent, parent);
                     parent.fireEvent(parentEvent);
                     event.consume();
@@ -357,6 +392,5 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             }
         }
     }
-
 
 }
