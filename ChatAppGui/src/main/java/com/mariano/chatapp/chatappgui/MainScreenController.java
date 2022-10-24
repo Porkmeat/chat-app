@@ -38,6 +38,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -49,6 +50,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private ListView<Chat> activeChat;
     private String requester;
 
+    @FXML
+    private Circle mainuserimg;
     @FXML
     private ToggleButton usercardtoggle;
     @FXML
@@ -78,11 +81,13 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     public void setupController(ChatAppClient client, String username) throws IOException {
         mainusername.setText(username);
+        mainuserimg.setStyle(username);
         this.client = client;
         this.client.addStatusListener(this);
         this.client.addMessageListener(this);
         this.client.addRequestListener(this);
         this.client.addFriendListener(this);
+        
         
         ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
         userlist.setCellFactory((ListView<Friend> userlist1) -> new CustomListCell());

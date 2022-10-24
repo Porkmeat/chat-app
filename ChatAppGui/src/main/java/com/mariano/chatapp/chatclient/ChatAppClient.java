@@ -8,13 +8,13 @@ import com.mariano.chatapp.chatappgui.Chat;
 import com.mariano.chatapp.chatappgui.Friend;
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +33,7 @@ public class ChatAppClient {
     private OutputStream serverOut;
     private InputStream serverIn;
     private BufferedReader reader;
+    private String tempdir;
     private final ArrayList<StatusListener> statusListeners = new ArrayList<>();
     private final ArrayList<MessageListener> messageListeners = new ArrayList<>();
     private final ArrayList<RequestListener> requestListeners = new ArrayList<>();
@@ -133,6 +134,13 @@ public class ChatAppClient {
 
     public void removeFriendListener(FriendListener listener) {
         friendListeners.remove(listener);
+    }
+
+    public void requestProfilePicture(String username) throws IOException {
+        if (tempdir == null) {
+            tempdir = Files.createTempDirectory("tmpDirPrefix").toFile().getAbsolutePath();
+        }
+        
     }
 
     private void serverListenLoop() {
@@ -295,7 +303,6 @@ public class ChatAppClient {
         Friend friend = new Friend(jsonobject.getString("user_login"), jsonobject.getString("contact_alias"),
                 jsonobject.getBoolean("friend_is_sender"), jsonobject.getInt("unseen_chats"),
                 jsonobject.getString("last_message"), localTime);
-        //jsonobject.getString("last_message_time")
         for (FriendListener listener : friendListeners) {
             listener.addChat(friend);
         }
